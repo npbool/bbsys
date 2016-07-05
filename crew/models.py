@@ -1,12 +1,17 @@
 # coding: utf8
 from django.db import models
 from .util import *
+from django.core.validators import RegexValidator
 
 
 # Create your models here.
 class Student(models.Model):
-    student_id = models.CharField(max_length=7)
-    national_id = models.CharField(max_length=18)
+    student_id = models.CharField(max_length=7, unique=True)
+    exam_id = models.CharField(max_length=10, unique=True, blank=True,
+                               validators=[RegexValidator(r'\d{10}', "考号必须为10位数字")])
+    exam_id_alt = models.CharField(max_length=10, unique=True, blank=True,
+                                   validators=[RegexValidator(r'\d{10}', "考号必须为10位数字")])
+    national_id = models.CharField(max_length=18, unique=True)
     name = models.CharField(max_length=6)
     gender = models.CharField(max_length=1, choices=Choices.GENDER_CHOICES)
     birth_date = models.DateField()
@@ -24,13 +29,28 @@ class Student(models.Model):
         (SCHOOL_BX, "博学")
     )
     school = models.CharField(max_length=2, choices=SCHOOL_CHOICES)
-    is_temp = models.BooleanField()
+    PROP_CHOICES = (
+        ('Y', "应届生"),
+        ('W', "往届生")
+    )
+    prop = models.CharField(max_length=1, choices=PROP_CHOICES)
+
     grade_idx = models.SmallIntegerField(choices=Choices.GRADE_CHOICES)
     class_idx = models.SmallIntegerField()
+    CATEGORY_CHOICES = (
+        ('W', "文科"),
+        ('L', "理科"),
+        ('U', "未分科")
+    )
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
 
     address = models.CharField(max_length=50)
     phone = models.CharField(max_length=15, validators=[phone_validator])
     enroll_year = models.IntegerField()
+
+    def __str__(self):
+        return self.name + "_" + self.get_school_display() + "_" + self.get_grade_idx_display() + "_" + str(
+            self.class_idx)
 
 
 class Staff(models.Model):
@@ -58,12 +78,6 @@ class Staff(models.Model):
     admin_level = models.CharField(max_length=5, blank=True)
     department = models.ForeignKey("Department", blank=True, null=True)
 
-# class Grade(models.Model):
-#     name = models.CharField(max_length=5)
-#
-# class Class(models.Model):
-#     pass
-
 
 class Subject(models.Model):
     name = models.CharField(max_length=10)
@@ -72,5 +86,11 @@ class Subject(models.Model):
 class Department(models.Model):
     name = models.CharField(max_length=10)
 
+    def __str__(self):
+        return str(self.pk) + ": " + self.name
 
 
+class Person(models.Model):
+    name = models.CharField(max_length=10)
+    dept = models.ForeignKey(Department)
+    grade = models.IntegerField(choices=Choices.GRADE_CHOICES)

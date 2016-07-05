@@ -1,0 +1,14 @@
+{% extends "crew/base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-3">
+      {% include "crew/components/query_panel.html" %}
+    </div>
+    <div class="col-md-9" id="id-main-content">
+      EMPTY now
+    </div>
+  </div>
+  <script src="{% static "js/query_crew.js" %}" type="text/javascript"></script>
+{% endblock %}
