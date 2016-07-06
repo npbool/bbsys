@@ -7,10 +7,8 @@ from django.core.validators import RegexValidator
 # Create your models here.
 class Student(models.Model):
     student_id = models.CharField(max_length=7, unique=True)
-    exam_id = models.CharField(max_length=10, unique=True, blank=True,
-                               validators=[RegexValidator(r'\d{10}', "考号必须为10位数字")])
-    exam_id_alt = models.CharField(max_length=10, unique=True, blank=True,
-                                   validators=[RegexValidator(r'\d{10}', "考号必须为10位数字")])
+    exam_id = models.CharField(max_length=10, blank=True)
+    exam_id_alt = models.CharField(max_length=10, blank=True)
     national_id = models.CharField(max_length=18, unique=True)
     name = models.CharField(max_length=6)
     gender = models.CharField(max_length=1, choices=Choices.GENDER_CHOICES)

@@ -1,0 +1,56 @@
+<table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th>学籍号</th>
+    <th>学号</th>
+    <th>考号1</th>
+    <th>姓名</th>
+    <th>学校</th>
+    <th>年级</th>
+    <th>班级</th>
+    <th>是否应届</th>
+    <th>文理</th>
+    <th>修改</th>
+  </tr>
+  {% for s in students %}
+    <tr>
+      <td>{{ s.pk }}</td>
+      <td>{{ s.student_id }}</td>
+      <td>{{ s.exam_id }}</td>
+      <td>{{ s.name }}</td>
+      <td>{{ s.get_school_display }}</td>
+      <td>{{ s.get_grade_idx_display }}</td>
+      <td>{{ s.class_idx }}</td>
+      <td>{{ s.get_prop_display }}</td>
+      <td>{{ s.get_category_display }}</td>
+      <td>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default btn-xs" onclick="view_student({{ s.pk }})">
+            <span class="glyphicon glyphicon-pencil"></span>修改
+          </button>
+          <button type="button" class="btn btn-danger btn-xs" onclick="delete_student({{ s.pk }})">
+            <span class="glyphicon glyphicon-remove"></span>删除
+          </button>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+<nav>
+  <ul class="pagination">
+    <li {% if not p.has_previous %} class="disabled" {% endif %}>
+      <a href="#" aria-label="Previous"> <span aria-hidden="true">&laquo;</span> </a>
+    </li>
+    {% for p in students.paginator.page_range %}
+      {% ifequal students.number p %}
+        <li class="active"><a href="#">{{ p }}</a></li>
+      {% else %}
+        <li>
+          <a href="#" onclick="query_student_list({{ p }}, false)">{{ p }}</a>
+        </li>
+      {% endifequal %}
+    {% endfor %}
+    <li {% if not p.has_next %} class="disabled" {% endif %}>
+      <a href="#" aria-label="Next"> <span aria-hidden="true">&raquo;</span> </a>
+    </li>
+  </ul>
+</nav>

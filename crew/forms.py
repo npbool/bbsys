@@ -47,3 +47,21 @@ class QueryForm(BSForm):
         self.helper.layout = Layout(
             'grade', 'class_', 'school', 'prop',
         )
+
+    def get_query_set(self):
+        qs = models.Student.objects.all()
+        filter_args = {}
+        data = self.cleaned_data
+        if data['grade']:
+            filter_args['grade_idx'] = data['grade']
+        if data['class_']:
+            filter_args['class_idx'] = data['class_']
+        filter_args['school__in'] = data['school']
+        filter_args['prop__in'] = data['prop']
+        return qs.filter(**filter_args)
+
+
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model = models.Student
+        fields = '__all__'
