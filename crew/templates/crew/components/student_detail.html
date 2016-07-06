@@ -1,2 +1,7 @@
 {% load crispy_forms_tags %}
-{% crispy form %}
+<form action="{{ action }}" class="form" method="post" id="id-student-form">
+  {% crispy form %}
+  {% csrf_token %}
+</form>
+{#<button class="btn btn-primary">保存</button>#}
+{#<button class="btn btn-default">后退</button>#}

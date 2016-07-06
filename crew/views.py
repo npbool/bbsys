@@ -36,7 +36,6 @@ def query(request):
 @csrf_exempt
 def student_list(request):
     if request.method == 'POST':
-        print(request.POST)
         page_index = request.POST.get('page', 1)
         query_form = QueryForm(request.POST)
         if query_form.is_valid():
@@ -51,22 +50,29 @@ def student_list(request):
 
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET', 'POST', 'DELETE'])
+@csrf_exempt
 def student_detail(request, pk):
     try:
-        student = Student.objects.get(pk=int(pk))
+        student = Student.objects.get(pk=pk)
     except Student.DoesNotExist:
         return JSONResponse(data={'ok': False, 'message': '找不到学生'})
 
-    if request.method == 'POST':
+    ok = True
+    if request.method == 'DELETE':
+        student.delete()
+        return JSONResponse(data={'ok': True})
+    elif request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
         if form.is_valid():
             form.save()
-            return JSONResponse(data={'ok': True})
-
-    form = StudentForm(instance=student)
-    content_html = render_to_string("crew/components/student_detail.html", {'form': form})
-    return JSONResponse(data={'ok': True, 'content_html': content_html})
+        else:
+            ok = False
+    else:
+        form = StudentForm(instance=student)
+    ctx = {'action': reverse('crew:student_detail', args=(pk,)), 'form': form}
+    content_html = render_to_string("crew/components/student_detail.html", ctx, request=request)
+    return JSONResponse(data={'ok': ok, 'content_html': content_html})
 
 
 class DepartmentList(generics.ListCreateAPIView):
