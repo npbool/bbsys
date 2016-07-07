@@ -3,6 +3,9 @@
   <div class="panel-heading"><h3 class="panel-title">选择查询条件</h3></div>
   <div class="panel-body">
     {% crispy form %}
-    <button class="pull-right btn btn-default" id="id-btn-query">查询</button>
+    <div class="btn-toolbar pull-right">
+      <button class="btn btn-primary" id="id-btn-query"><span class="glyphicon glyphicon-th-list"></span>查询</button>
+      <button class="btn btn-success" id="id-btn-create"><span class="glyphicon glyphicon-plus"></span>新增</button>
+    </div>
   </div>
 </div>

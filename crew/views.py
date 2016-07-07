@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from crispy_forms.utils import render_crispy_form
 from django.core.context_processors import csrf
 from django.http.response import HttpResponse
+from crew import util
 import json
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -15,6 +16,7 @@ from rest_framework import mixins, generics
 from .serializers import DepartmentSerializer, StudentSerializer, PersonSerializer
 from .models import Department, Student, Person
 from .forms import *
+import csv
 
 
 # Create your views here.
@@ -32,19 +34,27 @@ def query(request):
 
 
 @login_required
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['GET'])
 @csrf_exempt
 def student_list(request):
-    if request.method == 'POST':
-        page_index = request.POST.get('page', 1)
-        query_form = QueryForm(request.POST)
-        if query_form.is_valid():
+    page_index = int(request.GET.get('page', 1))
+    action = request.GET.get('action', 'list')
+    query_form = QueryForm(request.GET)
+    if query_form.is_valid():
+        if action == 'list':
             students = Paginator(query_form.get_query_set(), 1).page(page_index)
             form_html = render_crispy_form(query_form)
             content_html = render_to_string("crew/components/student_list.html", {"students": students})
             return JSONResponse(data={"ok": True, "form_html": form_html, "content_html": content_html})
-    else:
-        query_form = QueryForm()
+        else:
+            students = query_form.get_query_set()
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="student_info.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+            writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+            return response
+
     form_html = render_crispy_form(query_form)
     return JSONResponse(data={"ok": False, "form_html": form_html})
 
@@ -75,33 +85,15 @@ def student_detail(request, pk):
     return JSONResponse(data={'ok': ok, 'content_html': content_html})
 
 
-class DepartmentList(generics.ListCreateAPIView):
-    def get_queryset(self, *args, **kwargs):
-        return Department.objects.filter(*args, **kwargs)
-
-    serializer_class = DepartmentSerializer
-
-
-class DepartmentDetail(generics.RetrieveUpdateAPIView):
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
-
-
-class StudentList(generics.ListCreateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-
-class StudentDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-
-class PersonList(generics.ListCreateAPIView):
-    queryset = Person.objects.all()
-    serializer_class = PersonSerializer
-
-
-class PersonDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Person.objects.all()
-    serializer_class = PersonSerializer
+@login_required
+def student_create(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JSONResponse(data={'ok': True})
+    else:
+        form = StudentForm()
+    ctx = {'action': request.path, 'form': form}
+    content_html = render_to_string("crew/components/student_detail.html", ctx, request=request)
+    return JSONResponse(data={'ok': False, 'content_html': content_html})

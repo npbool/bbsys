@@ -8,10 +8,14 @@ function query_student_list(page = 1, update_filter = false) {
     if (update_filter) {
         query_filter = query_form.serialize();
     }
+    var params = {
+        'page': page,
+        'action': 'list'
+    };
     $.ajax({
         url: "/crew/student/",
-        type: "POST",
-        data: query_filter + "&page=" + page,
+        type: "GET",
+        data: query_filter + '&' + $.param(params),
         success: function (data) {
             btn_query.attr("disabled", false);
             if (data['ok']) {
@@ -31,9 +35,13 @@ function query_student_list(page = 1, update_filter = false) {
     });
 }
 
-var old_content = "";
+function export_student_list() {
+    window.open('/crew/student/?' + query_filter + "&action=export");
+}
+
+
 function view_student(student_id) {
-    old_content = $("#id-main-content").html();
+    save_content();
     $.ajax({
         url: "/crew/student/" + student_id,
         type: 'GET',
@@ -63,6 +71,7 @@ function update_student() {
         success: function (data) {
             if (data['ok']) {
                 show_message('success', "保存成功");
+                restore_content();
                 console.log("update done");
             } else {
                 console.log("update fail");
@@ -94,25 +103,48 @@ function delete_student(student_id) {
     })
 }
 
+// Util
+var old_content = "";
+function save_content(){
+    old_content = $('#id-main-content').html();
+}
+function restore_content(){
+    $('#id-main-content').html(old_content);
+}
+
 var timer = undefined
 function show_message(type, message, duration = 1) {
     $('#id-message').html('<div class="alert alert-' + type + '" role="alert">' + message + '</div>');
     $('#id-message').show();
-    if(timer){
+    if (timer) {
         clearTimeout(timer);
     }
-    timer = setTimeout(function(){
+    timer = setTimeout(function () {
         $('#id-message').fadeOut();
-    }, duration*1000);
+    }, duration * 1000);
 }
 
 $(function () {
     var btn_query = $("#id-btn-query");
-    btn_query.click(query_student_list.bind(1, true));
-    $('body').on('click', '#id-btn-save', update_student);
-    $('body').on('click', '#id-btn-back', function () {
-        $('#id-main-content').html(old_content);
+    btn_query.click(function () {
+        query_student_list(1, true);
     });
+    $('body').on('click', '#id-btn-create', function () {
+        save_content();
+        $.ajax({
+            url: '/crew/student/create',
+            type: 'GET',
+            success: function (data) {
+                $('#id-main-content').html(data['content_html']);
+            },
+            error: function () {
+                show_message('danger', "出错");
+            }
+        })
+    });
+    $('body').on('click', '#id-btn-export', export_student_list);
+    $('body').on('click', '#id-btn-save', update_student);
+    $('body').on('click', '#id-btn-back', restore_content);
 
     query_student_list(1, false);
 });

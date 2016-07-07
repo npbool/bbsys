@@ -1,4 +1,7 @@
 from django.core import validators
+import csv
+
+
 class Choices:
     GENDER_CHOICES = (
         ('M', '男'),
@@ -32,3 +35,13 @@ class Choices:
 
 
 phone_validator = validators.RegexValidator(r"[\d|-]+", message="号码格式错误")
+
+
+def export_model(op, query_set, model_class):
+    writer = csv.writer(op)
+    fields = model_class._meta.fields
+    columns = [field.verbose_name for field in fields]
+    writer.writerow(columns)
+    for obj in query_set:
+        values = [getattr(obj, field.name) for field in fields]
+        writer.writerow(values)

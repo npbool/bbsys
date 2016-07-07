@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^$', query, name="query"),
     url(r'^student/$', student_list, name="student_list"),
     url(r'^student/(?P<pk>\d+)$', student_detail, name="student_detail"),
+    url(r'^student/create$', student_create, name="student_create")
 ]
