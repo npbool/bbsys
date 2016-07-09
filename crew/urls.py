@@ -3,9 +3,9 @@ from django.contrib import admin
 
 from .views import *
 
-
 urlpatterns = [
     url(r'^$', query, name="query"),
+    url(r'^import/$', import_data, name="import"),
     url(r'^student/$', student_list, name="student_list"),
     url(r'^student/(?P<pk>\d+)$', student_detail, name="student_detail"),
     url(r'^student/create$', student_create, name="student_create")

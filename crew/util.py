@@ -1,5 +1,5 @@
 from django.core import validators
-from django.db import models
+from django.db import models, transaction
 from datetime import date, datetime
 import xlwt
 import xlrd
@@ -40,6 +40,23 @@ class Choices:
 phone_validator = validators.RegexValidator(r"[\d|-]+", message="号码格式错误")
 
 
+class ImportModelError(Exception):
+    pass
+
+
+class FieldError(ImportModelError):
+    def __init__(self, row, col_name, *args, **kwargs):
+        self.row, self.col_name = row, col_name
+        super().__init__(*args, **kwargs)
+
+    def __str__(self):
+        return "行{row}, {col_name} {msg}".format(row=self.row, col_name=self.col_name,
+                                               msg=super().__str__())
+
+class UniqueError(ImportModelError):
+    pass
+
+
 def to_representation(obj, field):
     value = getattr(obj, field.name)
     style = None
@@ -53,15 +70,26 @@ def to_representation(obj, field):
     return value, style
 
 
-def to_value(rep, field, wb):
+def to_value(row, col_name, rep, field, wb):
     if len(field.choices) > 0:
         for ch in field.choices:
             if ch[1] == rep:
                 return ch[0]
-        raise Exception(field.name + " " + str(rep) + "Not found")
+        raise FieldError(row, col_name, "取值不合法:{0}".format(rep))
+
     if isinstance(field, models.DateField):
-        year, month, day, *_ = xlrd.xldate_as_tuple(rep, wb.datemode)
-        return date(year, month, day)
+        try:
+            year, month, day, *_ = xlrd.xldate_as_tuple(rep, wb.datemode)
+            return date(year, month, day)
+        except:
+            raise FieldError(row, col_name, "日期格式错误: {0}".format(rep))
+
+    if isinstance(field, models.IntegerField) or isinstance(field, models.AutoField):
+        try:
+            return int(rep)
+        except:
+            raise FieldError(row, col_name, "不是整数: {0}".format(rep))
+
     return rep
 
 
@@ -83,27 +111,35 @@ def export_model(query_set, model_class):
     wb.save("学生.xls")
 
 
-def import_model(filename, model_class):
+def import_model(file, model_class):
     fields = model_class._meta.fields
     columns = [field.verbose_name for field in fields]
     print(columns)
 
-    wb = xlrd.open_workbook(filename)
-    ws = wb.sheet_by_index(0)
+    try:
+        wb = xlrd.open_workbook(file_contents=file.read())
+        ws = wb.sheet_by_index(0)
+    except:
+        raise ImportModelError("无法打开文件")
+
     header = ws.row_values(0)
-    print(header)
 
     column_indices = [header.index(column) if column in header else None for column in columns]
     not_found = [column for column, index in zip(columns, column_indices) if index is None]
     if not_found:
-        raise Exception("缺少以下列: "+','.join(not_found))
+        raise ImportModelError("缺少以下列: " + ','.join(not_found))
 
-    kwargs = {}
+    students = []
     for row_index in range(1, ws.nrows):
         row = ws.row_values(row_index)
+        kwargs = {}
         for field, index in zip(fields, column_indices):
-            kwargs[field.name] = to_value(row[index], field, wb)
-        print(kwargs)
-        s = model_class(**kwargs)
-        s.save()
+            kwargs[field.name] = to_value(row_index, field.verbose_name, row[index], field, wb)
 
+        s = model_class(**kwargs)
+        print(s)
+        print(kwargs)
+        s.full_clean()
+        students.append(s)
+
+    return students

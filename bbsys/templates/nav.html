@@ -12,9 +12,9 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                  aria-expanded="false">学籍管理<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#">学籍查询/修改</a></li>
+                <li><a href="{% url 'crew:query' %}">学籍查询/修改</a></li>
                 <li class="divider"></li>
-                <li><a href="#">学籍导入</a></li>
+                <li><a href="{% url 'crew:import' %}">学籍导入</a></li>
               </ul>
             </li>
             <li class="dropdown {% ifequal cur_module "score" %} active {% endifequal %}">

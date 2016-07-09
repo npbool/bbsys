@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
+from django.db import transaction, IntegrityError
+
 from crispy_forms.utils import render_crispy_form
 from django.core.context_processors import csrf
 from django.http.response import HttpResponse
@@ -17,6 +19,7 @@ from .serializers import DepartmentSerializer, StudentSerializer, PersonSerializ
 from .models import Department, Student, Person
 from .forms import *
 import csv
+import xlrd
 
 
 # Create your views here.
@@ -97,3 +100,27 @@ def student_create(request):
     ctx = {'action': request.path, 'form': form}
     content_html = render_to_string("crew/components/student_detail.html", ctx, request=request)
     return JSONResponse(data={'ok': False, 'content_html': content_html})
+
+
+@login_required
+@csrf_exempt
+def import_data(request):
+    if request.method == 'GET':
+        return render(request, 'crew/import.html')
+    else:
+        if not request.FILES:
+            print("NO files")
+        file = request.FILES['file']
+
+        try:
+            students = util.import_model(file, Student)
+        except Exception as e:
+            return JSONResponse(data={'ok': False, 'msg': str(e)})
+
+        try:
+            with transaction.atomic():
+                for s in students:
+                    s.save()
+        except IntegrityError as e:
+            return JSONResponse(data={'ok': False, 'msg': str(e)})
+        return JSONResponse(data={'ok': True})

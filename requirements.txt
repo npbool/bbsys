@@ -6,3 +6,5 @@ django-webpack-loader==0.3.0
 djangorestframework==3.3.3
 celery=3.1.23
 django-crispy-forms==1.6.0
+xlrd==0.9.4
+xlwt==1.0.0
