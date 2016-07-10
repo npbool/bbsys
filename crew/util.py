@@ -1,9 +1,16 @@
 from django.core import validators
 from django.db import models, transaction
+from django.http.response import HttpResponse
+import json
 from datetime import date, datetime
 import xlwt
 import xlrd
 
+class JSONResponse(HttpResponse):
+    def __init__(self, data, **kwargs):
+        content = json.dumps(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
 
 class Choices:
     GENDER_CHOICES = (

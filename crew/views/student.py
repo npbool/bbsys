@@ -8,7 +8,7 @@ from django.db import transaction, IntegrityError
 
 from crispy_forms.utils import render_crispy_form
 from django.http.response import HttpResponse
-from crew import util
+from crew.util import JSONResponse, import_model
 import json
 from crew.models import Department, Student, Person
 from crew.forms import *
@@ -17,13 +17,6 @@ import xlrd
 
 
 # Create your views here.
-
-class JSONResponse(HttpResponse):
-    def __init__(self, data, **kwargs):
-        content = json.dumps(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
-
 
 def student_query(request):
     ctx = {"form": QueryStudentForm()}
@@ -107,7 +100,7 @@ def student_import(request):
         file = request.FILES['file']
 
         try:
-            students = util.import_model(file, Student)
+            students = import_model(file, Student)
         except Exception as e:
             return JSONResponse(data={'ok': False, 'msg': str(e)})
 

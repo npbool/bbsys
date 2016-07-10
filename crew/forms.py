@@ -138,25 +138,29 @@ class StudentForm(forms.ModelForm):
         fields = '__all__'
 
 
-class QueryRecordForm(QueryStudentForm):
+class QueryRecordForm(BSForm):
+    semester = forms.ModelChoiceField(
+        queryset=models.Semester.objects.all(),
+        label="学期",
+    )
+    exam = forms.ModelChoiceField(
+        queryset=models.Exam.objects.all(),
+        label="考试"
+    )
+    grade = forms.TypedChoiceField(
+        label="年级",
+        choices=Choices.GRADE_CHOICES,
+        coerce=lambda x: int(x),
+        initial=1,
+        required=True
+    )
+    class_ = forms.IntegerField(
+        label="班级",
+        required=True,
+        min_value=1,
+        max_value=20
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper.form_id = 'id-query-form'
-        semester_choices = [
-            (s.pk, s) for s in models.Semester.objects.all()
-        ]
-
-        self.fields['semester'] = forms.ChoiceField(
-            label="学期",
-            choices=semester_choices,
-            initial=semester_choices[-1][0]
-        )
-        subject_choices = [
-            (s.pk, s) for s in models.Subject.objects.all()
-        ]
-
-        self.fields['subject'] = forms.MultipleChoiceField(
-            label="科目",
-            choices=subject_choices,
-            initial=[s[0] for s in subject_choices]
-        )

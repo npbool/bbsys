@@ -84,12 +84,21 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "科目"
+        verbose_name_plural = verbose_name
+
 
 class Exam(models.Model):
     name = models.CharField(max_length=20, verbose_name="考试名称")
+    subjects = models.ManyToManyField("Subject", verbose_name="包含科目")
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "考试"
+        verbose_name_plural = verbose_name
 
 
 class Semester(models.Model):
@@ -103,15 +112,24 @@ class Semester(models.Model):
     def __str__(self):
         return "{0}{1}".format(self.year, "上下"[self.season])
 
+    class Meta:
+        verbose_name = "学期"
+        verbose_name_plural = verbose_name
+
 
 class Record(models.Model):
     subject = models.ForeignKey("Subject", verbose_name="科目")
     student = models.ForeignKey("Student", verbose_name="学生")
     semester = models.ForeignKey("Semester", verbose_name="学期")
+    exam = models.ForeignKey("Exam", verbose_name="考试")
     score = models.FloatField(verbose_name="成绩")
 
     def __str__(self):
         return "{0} {1} {2} {3}".format(self.subject, self.semester, self.student, self.score)
+
+    class Meta:
+        verbose_name = "成绩"
+        verbose_name_plural = verbose_name
 
 
 class Department(models.Model):
