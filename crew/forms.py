@@ -10,8 +10,9 @@ class BSForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(BSForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_id = 'id-query-form'
-        self.helper.form_class = 'form'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-md-3 col-sm-4'
+        self.helper.field_class = 'col-md-9 col-sm-8'
         self.helper.html5_required = True
 
 
@@ -27,7 +28,7 @@ class BSRow(Div):
         super(BSRow, self).__init__(*args, **kwargs)
 
 
-class QueryForm(BSForm):
+class QueryStudentForm(BSForm):
     grade = forms.TypedChoiceField(
         label="年级",
         choices=Choices.GRADE_CHOICES,
@@ -41,23 +42,36 @@ class QueryForm(BSForm):
         min_value=1,
         max_value=20
     )
+    student_id = forms.CharField(
+        label="学号",
+        required=False,
+    )
     school = forms.MultipleChoiceField(
         label="学校",
         choices=models.Student.SCHOOL_CHOICES,
         widget=forms.CheckboxSelectMultiple,
-        required=True
+        required=True,
+        initial=[s[0] for s in models.Student.SCHOOL_CHOICES]
     )
     prop = forms.MultipleChoiceField(
         label="类别",
         choices=models.Student.PROP_CHOICES,
         widget=forms.CheckboxSelectMultiple,
+        initial=[s[0] for s in models.Student.PROP_CHOICES]
+    )
+    category = forms.MultipleChoiceField(
+        label="文理",
+        choices=models.Student.CATEGORY_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        initial=[s[0] for s in models.Student.CATEGORY_CHOICES]
     )
 
     def __init__(self, *args, **kwargs):
-        super(QueryForm, self).__init__(*args, **kwargs)
-        self.helper.layout = Layout(
-            'grade', 'class_', 'school', 'prop',
-        )
+        super(QueryStudentForm, self).__init__(*args, **kwargs)
+        self.helper.form_id = "id-query-form"
+        # self.helper.layout = Layout(
+        #     'grade', 'class_', 'school', 'prop', 'category', 'student_id'
+        # )
 
     def get_query_set(self):
         qs = models.Student.objects.all()
@@ -67,8 +81,11 @@ class QueryForm(BSForm):
             filter_args['grade_idx'] = data['grade']
         if data['class_']:
             filter_args['class_idx'] = data['class_']
+        if data['student_id']:
+            filter_args['student_id'] = data['student_id']
         filter_args['school__in'] = data['school']
         filter_args['prop__in'] = data['prop']
+        filter_args['category__in'] = data['category']
         return qs.filter(**filter_args)
 
 
@@ -119,3 +136,27 @@ class StudentForm(forms.ModelForm):
     class Meta:
         model = models.Student
         fields = '__all__'
+
+
+class QueryRecordForm(QueryStudentForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.form_id = 'id-query-form'
+        semester_choices = [
+            (s.pk, s) for s in models.Semester.objects.all()
+        ]
+
+        self.fields['semester'] = forms.ChoiceField(
+            label="学期",
+            choices=semester_choices,
+            initial=semester_choices[-1][0]
+        )
+        subject_choices = [
+            (s.pk, s) for s in models.Subject.objects.all()
+        ]
+
+        self.fields['subject'] = forms.MultipleChoiceField(
+            label="科目",
+            choices=subject_choices,
+            initial=[s[0] for s in subject_choices]
+        )

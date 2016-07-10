@@ -7,17 +7,11 @@ from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
 
 from crispy_forms.utils import render_crispy_form
-from django.core.context_processors import csrf
 from django.http.response import HttpResponse
 from crew import util
 import json
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import mixins, generics
-from .serializers import DepartmentSerializer, StudentSerializer, PersonSerializer
-from .models import Department, Student, Person
-from .forms import *
+from crew.models import Department, Student, Person
+from crew.forms import *
 import csv
 import xlrd
 
@@ -31,9 +25,9 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-def query(request):
-    ctx = {"form": QueryForm()}
-    return render(request, "crew/query.html", ctx)
+def student_query(request):
+    ctx = {"form": QueryStudentForm()}
+    return render(request, "student/query.html", ctx)
 
 
 @login_required
@@ -42,12 +36,12 @@ def query(request):
 def student_list(request):
     page_index = int(request.GET.get('page', 1))
     action = request.GET.get('action', 'list')
-    query_form = QueryForm(request.GET)
+    query_form = QueryStudentForm(request.GET)
     if query_form.is_valid():
         if action == 'list':
-            students = Paginator(query_form.get_query_set(), 1).page(page_index)
+            students = Paginator(query_form.get_query_set(), 10).page(page_index)
             form_html = render_crispy_form(query_form)
-            content_html = render_to_string("crew/components/student_list.html", {"students": students})
+            content_html = render_to_string("student/components/student_list.html", {"students": students})
             return JSONResponse(data={"ok": True, "form_html": form_html, "content_html": content_html})
         else:
             students = query_form.get_query_set()
@@ -84,7 +78,7 @@ def student_detail(request, pk):
     else:
         form = StudentForm(instance=student)
     ctx = {'action': reverse('crew:student_detail', args=(pk,)), 'form': form}
-    content_html = render_to_string("crew/components/student_detail.html", ctx, request=request)
+    content_html = render_to_string("student/components/student_detail.html", ctx, request=request)
     return JSONResponse(data={'ok': ok, 'content_html': content_html})
 
 
@@ -98,15 +92,15 @@ def student_create(request):
     else:
         form = StudentForm()
     ctx = {'action': request.path, 'form': form}
-    content_html = render_to_string("crew/components/student_detail.html", ctx, request=request)
+    content_html = render_to_string("student/components/student_detail.html", ctx, request=request)
     return JSONResponse(data={'ok': False, 'content_html': content_html})
 
 
 @login_required
 @csrf_exempt
-def import_data(request):
+def student_import(request):
     if request.method == 'GET':
-        return render(request, 'crew/import.html')
+        return render(request, 'student/import.html')
     else:
         if not request.FILES:
             print("NO files")

@@ -1,4 +1,4 @@
-var query_filter = "grade=1&class_=&school=BB&school=BX&prop=Y&prop=W";
+var query_filter = "";
 var cur_page = 1;
 function query_student_list(page = 1, update_filter = false) {
     console.log("querying");
@@ -146,6 +146,6 @@ $(function () {
     $('body').on('click', '#id-btn-save', update_student);
     $('body').on('click', '#id-btn-back', restore_content);
 
-    query_student_list(1, false);
+    query_student_list(1, true);
 });
 

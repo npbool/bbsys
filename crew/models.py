@@ -24,8 +24,8 @@ class Student(models.Model):
     SCHOOL_BB = "BB"
     SCHOOL_BX = "BX"
     SCHOOL_CHOICES = (
-        (SCHOOL_BB, "博白"),
-        (SCHOOL_BX, "博学")
+        (SCHOOL_BB, "博白(0646)"),
+        (SCHOOL_BX, "博学(0657)")
     )
     school = models.CharField(max_length=2, choices=SCHOOL_CHOICES, verbose_name="学校")
     PROP_CHOICES = (
@@ -35,13 +35,13 @@ class Student(models.Model):
     prop = models.CharField(max_length=1, choices=PROP_CHOICES, verbose_name="是否应届")
 
     grade_idx = models.SmallIntegerField(choices=Choices.GRADE_CHOICES, verbose_name="年级")
-    class_idx = models.SmallIntegerField(verbose_name="班级")
+    class_idx = models.SmallIntegerField(verbose_name="班号")
     CATEGORY_CHOICES = (
         ('W', "文科"),
         ('L', "理科"),
         ('U', "未分科")
     )
-    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES, verbose_name="分科")
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES, verbose_name="文理状态")
 
     address = models.CharField(max_length=50, verbose_name="地址")
     phone = models.CharField(max_length=15, validators=[phone_validator], verbose_name="手机号")
@@ -79,7 +79,39 @@ class Staff(models.Model):
 
 
 class Subject(models.Model):
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=10, verbose_name="科目")
+
+    def __str__(self):
+        return self.name
+
+
+class Exam(models.Model):
+    name = models.CharField(max_length=20, verbose_name="考试名称")
+
+    def __str__(self):
+        return self.name
+
+
+class Semester(models.Model):
+    SEASON_CHOICES = (
+        (0, "上学期"),
+        (1, "下学期")
+    )
+    year = models.IntegerField(verbose_name="年份")
+    season = models.IntegerField(verbose_name="学期", choices=SEASON_CHOICES)
+
+    def __str__(self):
+        return "{0}{1}".format(self.year, "上下"[self.season])
+
+
+class Record(models.Model):
+    subject = models.ForeignKey("Subject", verbose_name="科目")
+    student = models.ForeignKey("Student", verbose_name="学生")
+    semester = models.ForeignKey("Semester", verbose_name="学期")
+    score = models.FloatField(verbose_name="成绩")
+
+    def __str__(self):
+        return "{0} {1} {2} {3}".format(self.subject, self.semester, self.student, self.score)
 
 
 class Department(models.Model):

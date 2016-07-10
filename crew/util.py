@@ -23,12 +23,12 @@ class Choices:
     GRADE_J2 = -2
     GRADE_J3 = -3
     GRADE_CHOICES = (
-        (GRADE_S1, "高一"),
-        (GRADE_S3, "高二"),
-        (GRADE_S3, "高三"),
-        (GRADE_J1, "初一"),
-        (GRADE_J2, "初二"),
-        (GRADE_J3, "初三")
+        (GRADE_S1, "高一年级"),
+        (GRADE_S3, "高二年级"),
+        (GRADE_S3, "高三年级"),
+        (GRADE_J1, "初一年级"),
+        (GRADE_J2, "初二年级"),
+        (GRADE_J3, "初三年级")
     )
 
     HUKOU_CHOICES = (

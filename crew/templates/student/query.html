@@ -1,15 +1,13 @@
-{% extends "crew/base.html" %}
+{% extends "student/base.html" %}
 {% load staticfiles %}
 
 {% block content %}
   <div class="row">
-    <div class="col-md-2 col-sm-3">
-      {% include "crew/components/query_panel.html" %}
+    <div class="col-md-3 col-sm-4">
+      {% include "student/components/query_panel.html" %}
     </div>
-    <div class="col-md-9 col-sm-8">
-      <div class="page-header">
-        <h1>学籍管理</h1>
-      </div>
+    <div class="col-md-8 col-sm-8">
+      <h1>学籍管理</h1>
       <div id="id-message"></div>
       <div id="id-main-content">
       </div>

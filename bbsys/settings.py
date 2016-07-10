@@ -56,6 +56,7 @@ MIDDLEWARE_CLASSES = [
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'assets'),
+    os.path.join(BASE_DIR, 'crew', 'assets')
 )
 
 WEBPACK_LOADER = {
