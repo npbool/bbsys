@@ -2,6 +2,7 @@ from django.core import validators
 from django.db import models, transaction
 from django.http.response import HttpResponse
 from django.conf import settings
+from crew.models import Student, Record, Subject, Exam
 import json
 from datetime import date, datetime
 import xlwt
@@ -13,41 +14,6 @@ class JSONResponse(HttpResponse):
         content = json.dumps(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
-
-
-class Choices:
-    GENDER_CHOICES = (
-        ('M', '男'),
-        ('F', '女')
-    )
-    POLITICAL_CHOICES = (
-        ('DY', "中共党员"),
-        ('TY', "共青团员"),
-        ('QZ', "群众")
-    )
-
-    GRADE_S1 = 1
-    GRADE_S2 = 2
-    GRADE_S3 = 3
-    GRADE_J1 = -1
-    GRADE_J2 = -2
-    GRADE_J3 = -3
-    GRADE_CHOICES = (
-        (GRADE_S1, "高一年级"),
-        (GRADE_S3, "高二年级"),
-        (GRADE_S3, "高三年级"),
-        (GRADE_J1, "初一年级"),
-        (GRADE_J2, "初二年级"),
-        (GRADE_J3, "初三年级")
-    )
-
-    HUKOU_CHOICES = (
-        (0, "非农业户口"),
-        (1, "农业户口")
-    )
-
-
-phone_validator = validators.RegexValidator(r"[\d|-]+", message="号码格式错误")
 
 
 class ImportModelError(Exception):
@@ -115,11 +81,11 @@ def to_value(row, col_name, rep, field, wb):
     return rep
 
 
-def export_student(file, query_set, model_class):
+def export_student(file, query_set):
     wb = xlwt.Workbook()
     ws = wb.add_sheet("学生信息")
 
-    fields = model_class._meta.fields
+    fields = Student._meta.fields
     columns = [field.verbose_name for field in fields]
     for j, c in enumerate(columns):
         ws.write(0, j, c)
@@ -133,8 +99,8 @@ def export_student(file, query_set, model_class):
     wb.save(file)
 
 
-def import_student(file, model_class):
-    fields = model_class._meta.fields
+def import_student(file):
+    fields = Student._meta.fields
     columns = [field.verbose_name for field in fields]
     debug_print(columns)
 
@@ -158,7 +124,7 @@ def import_student(file, model_class):
         for field, index in zip(fields, column_indices):
             kwargs[field.name] = to_value(row_index, field.verbose_name, row[index], field, wb)
 
-        s = model_class(**kwargs)
+        s = Student(**kwargs)
         debug_print(s)
         debug_print(kwargs)
         s.clean()

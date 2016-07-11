@@ -2,8 +2,7 @@ from django import forms
 from django.core.urlresolvers import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Button, Div, Field, Fieldset, ButtonHolder
-from crew.util import Choices
-from crew import models
+from crew.models import Student, Exam, Subject, Record, Semester, Choices
 
 
 class BSForm(forms.Form):
@@ -52,22 +51,22 @@ class QueryStudentForm(BSForm):
     )
     school = forms.MultipleChoiceField(
         label="学校",
-        choices=models.Student.SCHOOL_CHOICES,
+        choices=Student.SCHOOL_CHOICES,
         widget=forms.CheckboxSelectMultiple,
         required=True,
-        initial=[s[0] for s in models.Student.SCHOOL_CHOICES]
+        initial=[s[0] for s in Student.SCHOOL_CHOICES]
     )
     prop = forms.MultipleChoiceField(
         label="类别",
-        choices=models.Student.PROP_CHOICES,
+        choices=Student.PROP_CHOICES,
         widget=forms.CheckboxSelectMultiple,
-        initial=[s[0] for s in models.Student.PROP_CHOICES]
+        initial=[s[0] for s in Student.PROP_CHOICES]
     )
     category = forms.MultipleChoiceField(
         label="文理",
-        choices=models.Student.CATEGORY_CHOICES,
+        choices=Student.CATEGORY_CHOICES,
         widget=forms.CheckboxSelectMultiple,
-        initial=[s[0] for s in models.Student.CATEGORY_CHOICES]
+        initial=[s[0] for s in Student.CATEGORY_CHOICES]
     )
 
     def __init__(self, *args, **kwargs):
@@ -78,7 +77,7 @@ class QueryStudentForm(BSForm):
         # )
 
     def get_query_set(self):
-        qs = models.Student.objects.all()
+        qs = Student.objects.all()
         filter_args = {}
         data = self.cleaned_data
         if data['grade']:
@@ -128,21 +127,21 @@ class StudentForm(forms.ModelForm):
         )
 
     class Meta:
-        model = models.Student
+        model = Student
         fields = '__all__'
 
 
 class InputRecordForm(BSForm):
     semester = forms.ModelChoiceField(
-        queryset=models.Semester.objects.all(),
+        queryset=Semester.objects.all(),
         label="学期",
     )
     exam = forms.ModelChoiceField(
-        queryset=models.Exam.objects.all(),
+        queryset=Exam.objects.all(),
         label="考试"
     )
     subject = forms.ModelChoiceField(
-        queryset=models.Subject.objects.all(),
+        queryset=Subject.objects.all(),
         label="科目"
     )
     grade = forms.TypedChoiceField(

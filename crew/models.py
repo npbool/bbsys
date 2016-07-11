@@ -1,8 +1,40 @@
 # coding: utf8
 from django.db import models
-from .util import *
 from django.core.validators import RegexValidator
 
+class Choices:
+    GENDER_CHOICES = (
+        ('M', '男'),
+        ('F', '女')
+    )
+    POLITICAL_CHOICES = (
+        ('DY', "中共党员"),
+        ('TY', "共青团员"),
+        ('QZ', "群众")
+    )
+
+    GRADE_S1 = 1
+    GRADE_S2 = 2
+    GRADE_S3 = 3
+    GRADE_J1 = -1
+    GRADE_J2 = -2
+    GRADE_J3 = -3
+    GRADE_CHOICES = (
+        (GRADE_S1, "高一年级"),
+        (GRADE_S3, "高二年级"),
+        (GRADE_S3, "高三年级"),
+        (GRADE_J1, "初一年级"),
+        (GRADE_J2, "初二年级"),
+        (GRADE_J3, "初三年级")
+    )
+
+    HUKOU_CHOICES = (
+        (0, "非农业户口"),
+        (1, "农业户口")
+    )
+
+
+phone_validator = RegexValidator(r"[\d|-]+", message="号码格式错误")
 
 # Create your models here.
 class Student(models.Model):

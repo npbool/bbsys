@@ -41,7 +41,7 @@ def student_list(request):
             students = query_form.get_query_set()
             response = HttpResponse(content_type='application/vnd.ms-excel')
             response['Content-Disposition'] = 'attachment; filename="student_info.xls"'
-            export_student(response, students, Student)
+            export_student(response, students)
             return response
 
     form_html = render_crispy_form(query_form)
@@ -99,7 +99,7 @@ def student_import(request):
         file = request.FILES['file']
 
         try:
-            students = import_student(file, Student)
+            students = import_student(file)
         except Exception as e:
             return JSONResponse(data={'ok': False, 'msg': str(e)})
 
