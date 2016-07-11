@@ -46,6 +46,10 @@ class QueryStudentForm(BSForm):
         label="学号",
         required=False,
     )
+    name = forms.CharField(
+        label="姓名",
+        required=False
+    )
     school = forms.MultipleChoiceField(
         label="学校",
         choices=models.Student.SCHOOL_CHOICES,
@@ -83,6 +87,8 @@ class QueryStudentForm(BSForm):
             filter_args['class_idx'] = data['class_']
         if data['student_id']:
             filter_args['student_id'] = data['student_id']
+        if data['name']:
+            filter_args['name'] = data['name']
         filter_args['school__in'] = data['school']
         filter_args['prop__in'] = data['prop']
         filter_args['category__in'] = data['category']
@@ -106,8 +112,7 @@ class StudentForm(forms.ModelForm):
                 BSCol('prop', col=2),
             ),
             BSRow(
-                BSCol('exam_id', col=3),
-                BSCol('exam_id_alt', col=3),
+                BSCol('exam_id', col=5),
                 BSCol('national_id', col=5),
             ),
             BSRow(
@@ -115,17 +120,6 @@ class StudentForm(forms.ModelForm):
                 BSCol('category', col=2),
                 BSCol('grade_idx', col=2),
                 BSCol('class_idx', col=2),
-                BSCol('political_status', col=2)
-            ),
-            BSRow(
-                BSCol('birth_date', col=3),
-                BSCol('native_place', col=3),
-                BSCol('ethnicity', col=2),
-                BSCol('hukou_is_agri', col=2),
-            ),
-            BSRow(
-                BSCol('address', col=7),
-                BSCol('phone', col=3),
             ),
             ButtonHolder(
                 Button("save", "保存", css_class="btn btn-primary", css_id="id-btn-save"),
@@ -171,8 +165,10 @@ class InputRecordForm(BSForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        exam = cleaned_data['exam']
-        subject = cleaned_data['subject']
-        if not exam.subjects.filter(pk=subject.pk).exists():
-            # raise forms.ValidationError("此次考试未考科目"+subject.name)
-            self.add_error("subject", "此次考试未考科目" + subject.name)
+        if 'exam' in cleaned_data and 'subject' in cleaned_data:
+            exam = cleaned_data['exam']
+            subject = cleaned_data['subject']
+            if not exam.subjects.filter(pk=subject.pk).exists():
+                # raise forms.ValidationError("此次考试未考科目"+subject.name)
+                self.add_error("subject", "此次考试未考科目" + subject.name)
+        return cleaned_data

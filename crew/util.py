@@ -1,16 +1,19 @@
 from django.core import validators
 from django.db import models, transaction
 from django.http.response import HttpResponse
+from django.conf import settings
 import json
 from datetime import date, datetime
 import xlwt
 import xlrd
+
 
 class JSONResponse(HttpResponse):
     def __init__(self, data, **kwargs):
         content = json.dumps(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
 
 class Choices:
     GENDER_CHOICES = (
@@ -58,7 +61,8 @@ class FieldError(ImportModelError):
 
     def __str__(self):
         return "行{row}, {col_name} {msg}".format(row=self.row, col_name=self.col_name,
-                                               msg=super().__str__())
+                                                 msg=super().__str__())
+
 
 class UniqueError(ImportModelError):
     pass
@@ -91,16 +95,27 @@ def to_value(row, col_name, rep, field, wb):
         except:
             raise FieldError(row, col_name, "日期格式错误: {0}".format(rep))
 
-    if isinstance(field, models.IntegerField) or isinstance(field, models.AutoField):
+    if isinstance(field, models.IntegerField):
         try:
             return int(rep)
         except:
             raise FieldError(row, col_name, "不是整数: {0}".format(rep))
 
+    if isinstance(field, models.AutoField):
+        if rep == '':
+            return None
+        try:
+            return int(rep)
+        except:
+            raise FieldError(row, col_name, "必须留空或取整数")
+    if isinstance(field, models.CharField):
+        if isinstance(rep, float):
+            raise FieldError(row, col_name, "必须选择文字格式")
+        return str(rep)
     return rep
 
 
-def export_model(query_set, model_class):
+def export_student(file, query_set, model_class):
     wb = xlwt.Workbook()
     ws = wb.add_sheet("学生信息")
 
@@ -115,13 +130,13 @@ def export_model(query_set, model_class):
                 ws.write(i + 1, j, rep, style)
             else:
                 ws.write(i + 1, j, rep)
-    wb.save("学生.xls")
+    wb.save(file)
 
 
-def import_model(file, model_class):
+def import_student(file, model_class):
     fields = model_class._meta.fields
     columns = [field.verbose_name for field in fields]
-    print(columns)
+    debug_print(columns)
 
     try:
         wb = xlrd.open_workbook(file_contents=file.read())
@@ -144,9 +159,14 @@ def import_model(file, model_class):
             kwargs[field.name] = to_value(row_index, field.verbose_name, row[index], field, wb)
 
         s = model_class(**kwargs)
-        print(s)
-        print(kwargs)
-        s.full_clean()
+        debug_print(s)
+        debug_print(kwargs)
+        s.clean()
         students.append(s)
 
     return students
+
+
+def debug_print(*args, **kwargs):
+    if settings.DEBUG:
+        print(*args, **kwargs)

@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
-
+from django.conf import settings
 from crispy_forms.utils import render_crispy_form
 from django.http.response import HttpResponse
-from crew.util import JSONResponse, import_model
+from crew.util import JSONResponse, import_student, export_student
 import json
 from crew.models import Department, Student, Person
 from crew.forms import *
@@ -16,6 +16,7 @@ import csv
 import xlrd
 
 
+page_size = settings.PAGE_SIZE
 # Create your views here.
 
 def student_query(request):
@@ -32,17 +33,15 @@ def student_list(request):
     query_form = QueryStudentForm(request.GET)
     if query_form.is_valid():
         if action == 'list':
-            students = Paginator(query_form.get_query_set(), 1).page(page_index)
+            students = Paginator(query_form.get_query_set(), page_size).page(page_index)
             form_html = render_crispy_form(query_form)
             content_html = render_to_string("student/components/student_list.html", {"students": students})
             return JSONResponse(data={"ok": True, "form_html": form_html, "content_html": content_html})
         else:
             students = query_form.get_query_set()
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="student_info.csv"'
-            writer = csv.writer(response)
-            writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
-            writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+            response = HttpResponse(content_type='application/vnd.ms-excel')
+            response['Content-Disposition'] = 'attachment; filename="student_info.xls"'
+            export_student(response, students, Student)
             return response
 
     form_html = render_crispy_form(query_form)
@@ -100,7 +99,7 @@ def student_import(request):
         file = request.FILES['file']
 
         try:
-            students = import_model(file, Student)
+            students = import_student(file, Student)
         except Exception as e:
             return JSONResponse(data={'ok': False, 'msg': str(e)})
 

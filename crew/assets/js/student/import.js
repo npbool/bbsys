@@ -1,5 +1,5 @@
 var timer = undefined
-function show_message(type, message, duration = 1) {
+function show_message(type, message, duration = 10) {
     $('#id-message').html('<div class="alert alert-' + type + '" role="alert">' + message + '</div>');
     $('#id-message').show();
     if (timer) {
@@ -13,7 +13,7 @@ function show_message(type, message, duration = 1) {
 $(function () {
     $('#id-file-upload').fileupload({
         dataType: 'json',
-        url: '/crew/import/',
+        url: '/crew/student/import/',
         options: {
             acceptFileTypes: /(\.|\/)(xls)$/i,
         },
@@ -35,7 +35,7 @@ $(function () {
             if(data.result['ok']){
                 show_message("success","导入成功");
             } else {
-                show_message("danger","导入失败");
+                show_message("danger","导入失败, "+data.result['msg']);
             }
             $("#id-file-submit").text("导入").addClass("disabled");
             console.log(data.result);

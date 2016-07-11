@@ -144,7 +144,9 @@ $(function () {
     });
     $('body').on('click', '#id-btn-export', export_student_list);
     $('body').on('click', '#id-btn-save', update_student);
-    $('body').on('click', '#id-btn-back', restore_content);
+    $('body').on('click', '#id-btn-back', function () {
+        query_student_list(cur_page, false);
+    });
 
     query_student_list(1, true);
 });
