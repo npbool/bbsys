@@ -32,7 +32,7 @@ def student_list(request):
     query_form = QueryStudentForm(request.GET)
     if query_form.is_valid():
         if action == 'list':
-            students = Paginator(query_form.get_query_set(), 10).page(page_index)
+            students = Paginator(query_form.get_query_set(), 1).page(page_index)
             form_html = render_crispy_form(query_form)
             content_html = render_to_string("student/components/student_list.html", {"students": students})
             return JSONResponse(data={"ok": True, "form_html": form_html, "content_html": content_html})

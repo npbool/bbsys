@@ -138,7 +138,7 @@ class StudentForm(forms.ModelForm):
         fields = '__all__'
 
 
-class QueryRecordForm(BSForm):
+class InputRecordForm(BSForm):
     semester = forms.ModelChoiceField(
         queryset=models.Semester.objects.all(),
         label="学期",
@@ -146,6 +146,10 @@ class QueryRecordForm(BSForm):
     exam = forms.ModelChoiceField(
         queryset=models.Exam.objects.all(),
         label="考试"
+    )
+    subject = forms.ModelChoiceField(
+        queryset=models.Subject.objects.all(),
+        label="科目"
     )
     grade = forms.TypedChoiceField(
         label="年级",
@@ -164,3 +168,11 @@ class QueryRecordForm(BSForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper.form_id = 'id-query-form'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        exam = cleaned_data['exam']
+        subject = cleaned_data['subject']
+        if not exam.subjects.filter(pk=subject.pk).exists():
+            # raise forms.ValidationError("此次考试未考科目"+subject.name)
+            self.add_error("subject", "此次考试未考科目" + subject.name)

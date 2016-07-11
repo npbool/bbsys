@@ -9,6 +9,6 @@ urlpatterns = [
     url(r'^student/query$', student_query, name="student_query"),
     url(r'^student/create$', student_create, name="student_create"),
     url(r'^student/import/$', student_import, name="student_import"),
-    url(r'^record/$', record_list, name="record_list"),
     url(r'^record/query$', record_query, name="record_query"),
+    url(r'^record/input$', record_input, name="record_input"),
 ]
