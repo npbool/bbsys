@@ -2,6 +2,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 
+
 class Choices:
     GENDER_CHOICES = (
         ('M', '男'),
@@ -35,6 +36,7 @@ class Choices:
 
 
 phone_validator = RegexValidator(r"[\d|-]+", message="号码格式错误")
+
 
 # Create your models here.
 class Student(models.Model):
@@ -122,6 +124,7 @@ class Semester(models.Model):
     class Meta:
         verbose_name = "学期"
         verbose_name_plural = verbose_name
+        unique_together = ('year', 'season')
 
 
 class Record(models.Model):
@@ -137,6 +140,7 @@ class Record(models.Model):
     class Meta:
         verbose_name = "成绩"
         verbose_name_plural = verbose_name
+        unique_together = ('subject', 'student', 'semester', 'exam')
 
 
 class Department(models.Model):

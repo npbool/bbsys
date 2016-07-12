@@ -11,4 +11,6 @@ urlpatterns = [
     url(r'^student/import/$', student_import, name="student_import"),
     url(r'^record/query$', record_query, name="record_query"),
     url(r'^record/input$', record_input, name="record_input"),
+    url(r'^record/analysis$', record_analysis, name="record_analysis"),
+    url(r'^record/api_analysis$', api_record_analysis)
 ]

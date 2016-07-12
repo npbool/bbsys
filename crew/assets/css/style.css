@@ -1,0 +1,27 @@
+.rank-table {
+    font-size: 10px;
+}
+.rank-table .name {
+    min-width: 70px;
+}
+.rank-table .score {
+    min-width: 50px;
+}
+.rank-table .rank {
+    min-width: 40px;
+}
+.rank-table .student-id {
+    min-width: 80px;
+}
+.rank-table .school {
+    min-width: 80px;
+}
+.rank-table .grade {
+    min-width: 70px;
+}
+.rank-table .class {
+    min-width: 40px;
+}
+.rank-table .prop {
+    min-width: 50px;
+}

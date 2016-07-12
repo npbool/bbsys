@@ -133,6 +133,73 @@ def import_student(file):
     return students
 
 
+def get_subject_id_list(exam, subject_list):
+    m = {s.name: s.pk for s in exam.subjects.all()}
+    try:
+        res = [m[s] for s in subject_list]
+        return res
+    except:
+        raise ImportModelError("科目与考试不匹配")
+
+
+def import_record(file, exam, semester):
+    try:
+        wb = xlrd.open_workbook(file_contents=file.read())
+        ws = wb.sheet_by_index(0)
+    except:
+        raise ImportModelError("无法打开文件")
+    header = ws.row_values(0)
+    if "考号" not in header:
+        raise ImportModelError("缺少考号")
+
+    subjects = [sub for sub in header if sub != '考号' and sub != '姓名']
+    debug_print(subjects)
+    subject_col_list = [col for col, sub in enumerate(header) if sub != '考号' and sub != '姓名']
+    debug_print(subject_col_list)
+    subject_id_list = get_subject_id_list(exam, subjects)
+    debug_print(subject_id_list)
+    if len(subjects) != len(set(subjects)):
+        raise ImportModelError("科目有重复")
+
+    exam_id_col = header.index("考号")
+    exam_id_list = ws.col_values(exam_id_col, 1)
+    if len(exam_id_list) != len(set(exam_id_list)):
+        raise ImportModelError("考号有重复")
+
+    table = {}
+    for row in range(1, ws.nrows):
+        exam_id = ws.cell_value(row, exam_id_col)
+        if isinstance(exam_id, float):
+            raise ImportModelError("考号必须为文本格式")
+        for col, subject_id in zip(subject_col_list, subject_id_list):
+            value = ws.cell_value(row, col)
+            if value != '':
+                table[(exam_id, subject_id)] = value
+
+    records = Record.objects.filter(student__exam_id__in=exam_id_list, subject_id__in=subject_id_list).select_related(
+        "student")
+    for record in records:
+        table_key = (record.student.exam_id, record.subject_id)
+        if table_key not in table:
+            record.delete()
+        else:
+            record.score = table[table_key]
+            record.save()
+            del table[table_key]
+    for (exam_id, subject_id) in table:
+        try:
+            student = Student.objects.get(exam_id=exam_id)
+        except Student.DoesNotExist:
+            raise ImportModelError("考号{0}无对应学生".format(exam_id))
+        Record.objects.create(subject_id=subject_id, student=student, exam=exam, semester=semester,
+                              score=table[(exam_id, subject_id)])
+
+
+def import_record_wrapper(file, exam, semester):
+    with transaction.atomic():
+        import_record(file, exam, semester)
+
+
 def debug_print(*args, **kwargs):
     if settings.DEBUG:
         print(*args, **kwargs)

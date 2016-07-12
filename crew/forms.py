@@ -171,3 +171,64 @@ class InputRecordForm(BSForm):
                 # raise forms.ValidationError("此次考试未考科目"+subject.name)
                 self.add_error("subject", "此次考试未考科目" + subject.name)
         return cleaned_data
+
+
+class AnalyzeRecordForm(BSForm):
+    semester = forms.ModelChoiceField(
+        queryset=Semester.objects.all(),
+        label="学期",
+        required=True
+    )
+    exam = forms.ModelChoiceField(
+        queryset=Exam.objects.all(),
+        label="考试",
+        required=True
+    )
+    subjects = forms.ModelMultipleChoiceField(
+        queryset=Subject.objects.all(),
+        label="科目",
+        required=True,
+    )
+    grade = forms.ChoiceField(
+        choices=Choices.GRADE_CHOICES,
+        label="年级",
+        required=True,
+    )
+    school_prop = forms.MultipleChoiceField(
+        choices=(
+            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in Student.PROP_CHOICES
+        ),
+        label="类型",
+        required=True
+    )
+
+    ANALYSIS_RANK = 1
+    ANALYSIS_REL = 2
+    analysis_type = forms.ChoiceField(
+        choices=(
+            (ANALYSIS_RANK, "名次"),
+            (ANALYSIS_REL, "进退")
+        ),
+        label="分析"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(AnalyzeRecordForm, self).__init__(*args, **kwargs)
+        all_classes = [r['class_idx'] for r in Student.objects.all().values('class_idx').distinct()]
+        self.fields['classes'] = forms.MultipleChoiceField(
+            choices=list(zip(all_classes, all_classes)),
+            initial=all_classes
+        )
+        self.fields['subjects'].initial = [s.pk for s in Subject.objects.all()]
+
+        # self.helper.layout = Layout(
+        #      'semester', 'exam', 'grade', 'subjects', 'school_prop', 'analysis_type'
+        # )
+        self.helper.form_id = 'id-query-form'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if 'school_prop' in cleaned_data:
+            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_prop']]
+            print(cleaned_data)
+        return cleaned_data

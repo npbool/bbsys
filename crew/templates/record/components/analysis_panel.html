@@ -1,0 +1,11 @@
+{% load crispy_forms_tags %}
+<div class="panel panel-primary">
+  <div class="panel-heading"><h3 class="panel-title">选择查询条件</h3></div>
+  <div class="panel-body">
+    {% crispy form %}
+    <div class="btn-toolbar pull-right">
+      <button class="btn btn-primary" id="id-btn-stat"><span class="glyphicon glyphicon-th-list"></span>统计</button>
+      <button class="btn btn-default" id="id-btn-export"><span class="glyphicon glyphicon-download-alt"></span>导出</button>
+    </div>
+  </div>
+</div>

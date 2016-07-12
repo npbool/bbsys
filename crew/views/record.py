@@ -5,10 +5,15 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db import IntegrityError
+from django.db.models import Q
 from crew.forms import *
 from crew.models import *
-from crew.util import JSONResponse
+from crew.util import JSONResponse, debug_print
 from crispy_forms.utils import render_crispy_form
+from crew import analysis
+import json
+import functools
+import operator
 
 '''
 @require_GET
@@ -127,3 +132,59 @@ def record_input(request):
         except ValueError:
             return JSONResponse({'ok': False, 'msg': "分数格式错误"})
         return JSONResponse({'ok': True})
+
+
+@require_http_methods(['GET', 'POST'])
+@csrf_exempt
+def record_import(request):
+    pass
+
+
+def record_analysis(request):
+    form = AnalyzeRecordForm()
+    return render(request, 'record/analysis.html', {'form': form})
+
+
+@require_GET
+def api_record_analysis(request):
+    form = AnalyzeRecordForm(request.GET)
+    if form.is_valid():
+        semester, exam = form.cleaned_data['semester'], form.cleaned_data['exam']
+        subjects = form.cleaned_data['subjects']
+        school_props = form.cleaned_data['school_props']
+        grade = form.cleaned_data['grade']
+        classes = form.cleaned_data['classes']
+
+        debug_print(request.GET)
+        sort_by = request.GET['sort_by']
+        ascending = int(request.GET['ascending']) == 1
+        debug_print(sort_by, ascending)
+
+        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in school_props))
+        rank_students = Student.objects.filter(conds)
+        try:
+            df, subject_cols = analysis.load_records(exam, semester, subjects, rank_students)
+            df = analysis.stat_rank(df, subject_cols)
+        except analysis.AnalysisError as e:
+            return JSONResponse({'ok': False, 'msg': str(e), 'form_html': render_crispy_form(form)})
+
+        display_students = Student.objects.filter(conds).filter(class_idx__in=classes, grade_idx=grade)
+        df = df.ix[[s.id for s in display_students]]
+        df.sort_values(('score', sort_by), ascending=ascending, inplace=True)
+
+        context = {
+            'data': df.to_dict('record'),
+            'subjects': subject_cols,
+        }
+        content_html = render_to_string('record/components/rank_list.html', context)
+        return JSONResponse({
+            'ok': True,
+            'form_html': render_crispy_form(form),
+            'content_html': content_html,
+        })
+    else:
+        debug_print("INVALID")
+        return JSONResponse({
+            'ok': False,
+            'form_html': render_crispy_form(form)
+        })
