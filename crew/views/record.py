@@ -140,6 +140,8 @@ def record_import(request):
     pass
 
 
+@require_http_methods(['GET', 'POST'])
+@csrf_exempt
 def record_analysis(request):
     form = AnalyzeRecordForm()
     return render(request, 'record/analysis.html', {'form': form})
@@ -180,3 +182,23 @@ def api_record_analysis(request):
             'msg': '表单错误',
             'form_html': render_crispy_form(form)
         })
+
+
+@require_http_methods(['GET', 'POST'])
+def record_segment_analysis(request):
+    if request.method == 'POST':
+        form = AnalysisSegForm(request.POST)
+        if form.is_valid():
+            ana = analysis.SegmentAnalysis(form)
+            cnt_df = ana.get_df()
+            agg = cnt_df.sum(axis=0)
+            context = {
+                'form': form,
+                'agg': agg.to_dict(),
+                'data': cnt_df.to_dict('records'),
+                'segments': ana.segments
+            }
+
+            return render(request, 'record/segment.html', context)
+    form = AnalysisSegForm()
+    return render(request, 'record/segment.html', {'form': form})

@@ -41,3 +41,8 @@ def get_rank_school_cmp(student, subject):
 def get_rank_diff(student, subject):
     rank = student[('rank_diff', subject)]
     return rank
+
+
+@register.filter(name='value')
+def get_value(row, key):
+    return row[key]

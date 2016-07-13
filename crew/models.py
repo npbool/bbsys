@@ -35,6 +35,28 @@ class Choices:
     )
 
 
+class SegmentsField(models.CharField):
+    def from_db_value(self, value, expression, connection, context):
+        if value is None:
+            return value
+        if value == '':
+            return []
+        return sorted([int(x) for x in value.split(',')], reverse=True)
+
+    def to_python(self, value):
+        if isinstance(value, list):
+            return value
+        if value is None:
+            return value
+        return sorted([int(x) for x in value.split(',')], reverse=True)
+
+    def get_prep_value(self, value):
+        return ','.join(str(x) for x in value)
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        return ','.join(str(x) for x in value)
+
+
 phone_validator = RegexValidator(r"[\d|-]+", message="号码格式错误")
 
 
@@ -93,6 +115,7 @@ class Subject(models.Model):
     belong_art = models.BooleanField(verbose_name="文科是否统计", default=False)
     belong_universal = models.BooleanField(verbose_name="不分科是否统计", default=False)
     total_score = models.IntegerField(verbose_name="满分")
+    segments = SegmentsField(verbose_name="分数段", default=[], max_length=1024)
 
     def __str__(self):
         return self.name
@@ -112,6 +135,17 @@ class Subject(models.Model):
     @staticmethod
     def universal_total():
         return Subject.objects.filter(belong_universal=True).aggregate(models.Sum('total_score'))
+
+    @staticmethod
+    def category_subjects(category):
+        if category == 'W':
+            return Subject.objects.filter(belong_art=True)
+        elif category == 'L':
+            return Subject.objects.filter(belong_science=True)
+        elif category == 'U':
+            return Subject.objects.filter(belong_universal=True)
+        else:
+            raise ValueError("category illegal")
 
 
 class Exam(models.Model):
@@ -169,6 +203,9 @@ class Department(models.Model):
 class SystemSettings(models.Model):
     default_semester = models.ForeignKey(Semester)
     default_exam = models.ForeignKey(Exam)
+    science_segments = SegmentsField(max_length=1024, verbose_name="理科分数段")
+    art_segments = SegmentsField(max_length=1024, verbose_name="文科分数段")
+    universal_segments = SegmentsField(max_length=1024, verbose_name="不分科分数段")
 
     @staticmethod
     def get_instance():

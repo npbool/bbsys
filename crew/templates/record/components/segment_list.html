@@ -1,0 +1,30 @@
+{% load rank_tags %}
+<table class="table table-striped table-bordered table-condensed">
+  <thead>
+  <tr>
+    <th>班级</th>
+    <th>人数</th>
+    {% for seg in segments %}
+      <th>{{ seg }}累计</th>
+    {% endfor %}
+  </tr>
+  </thead>
+  <tbody>
+  {% for row in data %}
+    <tr>
+      <td>{{ row|value:'class_idx' }}</td>
+      <td>{{ row|value:'total' }}</td>
+      {% for seg in segments %}
+        <td>{{ row|value:seg }}</td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  <tr>
+    <td>总计</td>
+    <td>{{ agg|value:'total' }}</td>
+    {% for seg in segments %}
+      <td>{{ agg|value:seg }}</td>
+    {% endfor %}
+  </tr>
+  </tbody>
+</table>

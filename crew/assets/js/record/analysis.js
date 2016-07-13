@@ -1,6 +1,6 @@
-query_filter = "";
-cur_page = 1;
-function query_record(page = 1, update_filter = false, sort_by="总分", ascending=false) {
+var query_filter = "";
+var cur_page = 1;
+function query_record(page, update_filter, sort_by, ascending) {
     console.log("querying");
     console.log(ascending)
     var btn_query = $("#id-btn-query");
@@ -38,7 +38,10 @@ function query_record(page = 1, update_filter = false, sort_by="总分", ascendi
 }
 
 var timer = undefined;
-function show_message(type, message, duration = 1) {
+function show_message(type, message, duration) {
+    if(duration === undefined){
+        duration = 5;
+    }
     $('#id-message').html('<div class="alert alert-' + type + '" role="alert">' + message + '</div>');
     $('#id-message').show();
     if (timer) {
@@ -51,7 +54,7 @@ function show_message(type, message, duration = 1) {
 
 $(function () {
     $("#id-btn-stat").click(function () {
-        query_record(1, true);
+        query_record(1, true, "总分", false);
     });
 
     var current_sort_key = '总分';

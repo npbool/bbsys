@@ -194,7 +194,7 @@ class AnalyzeRecordForm(BSForm):
         label="年级",
         required=True,
     )
-    school_prop = forms.MultipleChoiceField(
+    school_props = forms.MultipleChoiceField(
         choices=(
             (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
             Student.PROP_CHOICES
@@ -236,25 +236,45 @@ class AnalyzeRecordForm(BSForm):
         self.fields['subjects'].initial = [s.pk for s in Subject.objects.all()]
 
         self.helper.layout = Layout(
-            'semester', 'exam', 'grade', 'classes', 'subjects', 'school_prop', 'analysis_type', 'semester_cmp',
+            'semester', 'exam', 'grade', 'classes', 'subjects', 'school_props', 'analysis_type', 'semester_cmp',
             'exam_cmp'
         )
         self.helper.form_id = 'id-query-form'
 
     def clean(self):
         cleaned_data = super().clean()
-        if 'school_prop' in cleaned_data:
-            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_prop']]
+        if 'school_props' in cleaned_data:
+            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_props']]
             print(cleaned_data)
         return cleaned_data
 
 
-# class SegForm(forms.Form):
-#     semester = forms.ModelChoiceField(Semester, label="学期", queryset=Semester.objects.all())
-#     exam = forms.ModelChoiceField(Exam, label="考试", queryset=Exam.objects.all())
-#
-#
-# class SubSegForm():
+class AnalysisSegForm(BSForm):
+    semester = forms.ModelChoiceField(label="学期", queryset=Semester.objects.all())
+    exam = forms.ModelChoiceField(label="考试", queryset=Exam.objects.all())
+    grade = forms.TypedChoiceField(label="年级", choices=Choices.GRADE_CHOICES, coerce=lambda x: int(x))
+    category = forms.ChoiceField(label="文理", choices=Student.CATEGORY_CHOICES, initial='U')
+    school_props = forms.MultipleChoiceField(
+        choices=(
+            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
+            Student.PROP_CHOICES
+        ),
+        label="类型",
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper.form_tag = False
+        self.fields['semester'].initial = Semester.objects.first()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if 'school_props' in cleaned_data:
+            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_props']]
+        return cleaned_data
+
+# class SubSegForm(Ana):
 #     pass
 #
 #
