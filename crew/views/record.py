@@ -170,7 +170,11 @@ def api_record_analysis(request):
 
         display_students = Student.objects.filter(conds).filter(class_idx__in=classes, grade_idx=grade)
         df = df.ix[[s.id for s in display_students]]
-        df.sort_values(('score', sort_by), ascending=ascending, inplace=True)
+        if sort_by == 'student_id':
+            df['student_id_numeric'] = df['student_id'].map(lambda x:int(x[1:]))
+            df.sort_values('student_id_numeric', ascending=ascending, inplace=True)
+        else:
+            df.sort_values(('score', sort_by), ascending=ascending, inplace=True)
 
         context = {
             'data': df.to_dict('record'),
@@ -186,5 +190,6 @@ def api_record_analysis(request):
         debug_print("INVALID")
         return JSONResponse({
             'ok': False,
+            'msg': '表单错误',
             'form_html': render_crispy_form(form)
         })

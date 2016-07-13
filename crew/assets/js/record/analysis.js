@@ -56,15 +56,19 @@ $(function () {
 
     var current_sort_key = '总分';
     var current_ascending = false;
-    $("body").on("click", ".rank-table .subject, .rank-table .score, .rank-table .rank", function () {
-        console.log("sort");
-        var new_sort_key = $(this).data('subject');
+    $("body").on("click", ".rank-table .subject, .rank-table .score, .rank-table .rank, .rank-table .student-id", function () {
+        var new_sort_key = $(this).data('key');
         if(new_sort_key == current_sort_key){
             current_ascending = !current_ascending;
         } else {
             current_sort_key = new_sort_key;
-            current_ascending = false;
+            if(new_sort_key=='student_id'){
+                current_ascending = true;
+            } else {
+                current_ascending = false;
+            }
         }
+        console.log("sort " + new_sort_key + ' ' + current_ascending);
         query_record(1, false, current_sort_key, current_ascending);
     });
 });

@@ -1,24 +1,24 @@
 {% load rank_tags %}
 
-<div style="overflow:scroll">
+<div class="table-container">
   <table class="table table-striped table-bordered table-condensed rank-table">
     <thead>
     <tr>
-      <th rowspan="2" class="student-id">学号</th>
+      <th rowspan="2" class="student-id" data-key="student_id">学号</th>
       <th rowspan="2" class="name">姓名</th>
 {#      <th rowspan="2" class="grade">年级</th>#}
       <th rowspan="2" class="class">班级</th>
       <th rowspan="2" class="school">学校</th>
       <th rowspan="2" class="prop">类型</th>
       {% for subject in subjects %}
-        <th colspan="3" class="subject" data-subject="{{ subject }}">{{ subject }}</th>
+        <th colspan="3" class="subject" data-key="{{ subject }}">{{ subject }}</th>
       {% endfor %}
     </tr>
     <tr>
       {% for subject in subjects %}
-        <th class="score" data-subject="{{ subject }}">成绩</th>
-        <th class="rank" data-subject="{{ subject }}">班排</th>
-        <th class="rank" data-subject="{{ subject }}">校排</th>
+        <th class="score" data-key="{{ subject }}">成绩</th>
+        <th class="rank" data-key="{{ subject }}">班排</th>
+        <th class="rank" data-key="{{ subject }}">校排</th>
       {% endfor %}
     </tr>
     </thead>
