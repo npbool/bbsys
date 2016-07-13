@@ -80,7 +80,7 @@ def record_input(request):
         page = Paginator(students_all, 10).page(page_no)
         students = page.object_list
 
-        records = Record.objects.filter(semester=semester, subject=subject, student__in=students)
+        records = Record.objects.filter(semester=semester, subject=subject, exam=exam, student__in=students)
         scores = {r.student_id: r.score for r in records}
         context = {
             'records': [
@@ -108,7 +108,7 @@ def record_input(request):
         exam = form.cleaned_data['exam']
         subject = form.cleaned_data['subject']
         records = Record.objects.filter(semester=semester, student__grade_idx=form.cleaned_data['grade'],
-                                        subject=subject,
+                                        subject=subject, exam=exam,
                                         student__class_idx=form.cleaned_data['class_'],
                                         student_id__in=updated_student.keys())
         try:

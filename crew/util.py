@@ -176,7 +176,8 @@ def import_record(file, exam, semester):
             if value != '':
                 table[(exam_id, subject_id)] = value
 
-    records = Record.objects.filter(student__exam_id__in=exam_id_list, subject_id__in=subject_id_list).select_related(
+    records = Record.objects.filter(exam=exam, semester=semester, student__exam_id__in=exam_id_list,
+                                    subject_id__in=subject_id_list).select_related(
         "student")
     for record in records:
         table_key = (record.student.exam_id, record.subject_id)
