@@ -88,7 +88,11 @@ class Staff(models.Model):
 
 
 class Subject(models.Model):
-    name = models.CharField(max_length=10, verbose_name="科目")
+    name = models.CharField(max_length=10, verbose_name="科目", unique=True)
+    belong_science = models.BooleanField(verbose_name="理科是否统计", default=False)
+    belong_art = models.BooleanField(verbose_name="文科是否统计", default=False)
+    belong_universal = models.BooleanField(verbose_name="不分科是否统计", default=False)
+    total_score = models.IntegerField(verbose_name="满分")
 
     def __str__(self):
         return self.name
@@ -96,6 +100,18 @@ class Subject(models.Model):
     class Meta:
         verbose_name = "科目"
         verbose_name_plural = verbose_name
+
+    @staticmethod
+    def science_total():
+        return Subject.objects.filter(belong_science=True).aggregate(models.Sum('total_score'))
+
+    @staticmethod
+    def art_total():
+        return Subject.objects.filter(belong_art=True).aggregate(models.Sum('total_score'))
+
+    @staticmethod
+    def universal_total():
+        return Subject.objects.filter(belong_universal=True).aggregate(models.Sum('total_score'))
 
 
 class Exam(models.Model):
@@ -148,6 +164,19 @@ class Department(models.Model):
 
     def __str__(self):
         return str(self.pk) + ": " + self.name
+
+
+class SystemSettings(models.Model):
+    default_semester = models.ForeignKey(Semester)
+    default_exam = models.ForeignKey(Exam)
+
+    @staticmethod
+    def get_instance():
+        return SystemSettings.objects.first()
+
+    class Meta:
+        verbose_name = "系统设置"
+        verbose_name_plural = verbose_name
 
 
 class Person(models.Model):

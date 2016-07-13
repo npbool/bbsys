@@ -197,7 +197,7 @@ class AnalyzeRecordForm(BSForm):
     school_prop = forms.MultipleChoiceField(
         choices=(
             (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
-        Student.PROP_CHOICES
+            Student.PROP_CHOICES
         ),
         label="类型",
         required=True
@@ -236,7 +236,8 @@ class AnalyzeRecordForm(BSForm):
         self.fields['subjects'].initial = [s.pk for s in Subject.objects.all()]
 
         self.helper.layout = Layout(
-             'semester', 'exam', 'grade', 'classes', 'subjects', 'school_prop', 'analysis_type', 'semester_cmp', 'exam_cmp'
+            'semester', 'exam', 'grade', 'classes', 'subjects', 'school_prop', 'analysis_type', 'semester_cmp',
+            'exam_cmp'
         )
         self.helper.form_id = 'id-query-form'
 
@@ -246,3 +247,16 @@ class AnalyzeRecordForm(BSForm):
             cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_prop']]
             print(cleaned_data)
         return cleaned_data
+
+
+# class SegForm(forms.Form):
+#     semester = forms.ModelChoiceField(Semester, label="学期", queryset=Semester.objects.all())
+#     exam = forms.ModelChoiceField(Exam, label="考试", queryset=Exam.objects.all())
+#
+#
+# class SubSegForm():
+#     pass
+#
+#
+# class TotalSegForm():
+#     pass
