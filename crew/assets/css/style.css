@@ -29,3 +29,14 @@
 .rank-table .prop {
     min-width: 50px;
 }
+
+td.rank-up {
+    color: red;
+}
+td.rank-down {
+    color: green;
+}
+
+.panel-compact .panel-body {
+    font-size: 11px;
+}

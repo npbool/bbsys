@@ -149,43 +149,30 @@ def record_analysis(request):
 def api_record_analysis(request):
     form = AnalyzeRecordForm(request.GET)
     if form.is_valid():
-        semester, exam = form.cleaned_data['semester'], form.cleaned_data['exam']
-        subjects = form.cleaned_data['subjects']
-        school_props = form.cleaned_data['school_props']
-        grade = form.cleaned_data['grade']
-        classes = form.cleaned_data['classes']
-
-        debug_print(request.GET)
         sort_by = request.GET['sort_by']
         ascending = int(request.GET['ascending']) == 1
         debug_print(sort_by, ascending)
-
-        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in school_props))
-        rank_students = Student.objects.filter(conds)
+        tp = form.cleaned_data['analysis_type']
         try:
-            df, subject_cols = analysis.load_records(exam, semester, subjects, rank_students)
-            df = analysis.stat_rank(df, subject_cols)
+            if tp == AnalyzeRecordForm.ANALYSIS_RANK:
+                debug_print("RANK")
+                ana = analysis.RankAnalysis(form, sort_by, ascending)
+            elif tp == AnalyzeRecordForm.ANALYSIS_REL:
+                debug_print("CMP")
+                ana = analysis.RankCmpAnalysis(form, sort_by, ascending)
+            else:
+                raise analysis.AnalysisError("未实现")
+            context = ana.get_context()
+
+            content_html = render_to_string(ana.template_name, context)
+            return JSONResponse({
+                'ok': True,
+                'form_html': render_crispy_form(form),
+                'content_html': content_html
+            })
+
         except analysis.AnalysisError as e:
-            return JSONResponse({'ok': False, 'msg': str(e), 'form_html': render_crispy_form(form)})
-
-        display_students = Student.objects.filter(conds).filter(class_idx__in=classes, grade_idx=grade)
-        df = df.ix[[s.id for s in display_students]]
-        if sort_by == 'student_id':
-            df['student_id_numeric'] = df['student_id'].map(lambda x:int(x[1:]))
-            df.sort_values('student_id_numeric', ascending=ascending, inplace=True)
-        else:
-            df.sort_values(('score', sort_by), ascending=ascending, inplace=True)
-
-        context = {
-            'data': df.to_dict('record'),
-            'subjects': subject_cols,
-        }
-        content_html = render_to_string('record/components/rank_list.html', context)
-        return JSONResponse({
-            'ok': True,
-            'form_html': render_crispy_form(form),
-            'content_html': content_html,
-        })
+            return JSONResponse({'ok': False, 'form_html': render_crispy_form(form), 'msg': str(e)})
     else:
         debug_print("INVALID")
         return JSONResponse({

@@ -1,6 +1,7 @@
 from django import template
 
 import numpy as np
+
 register = template.Library()
 
 
@@ -20,3 +21,23 @@ def get_score(student, subject):
     if np.isnan(score):
         return "缺考"
     return score
+
+
+@register.filter(name="score_cmp")
+def get_score_cmp(student, subject):
+    score = student[('score_cmp', subject)]
+    if np.isnan(score):
+        return "缺考"
+    return score
+
+
+@register.filter(name="rank_school_cmp")
+def get_rank_school_cmp(student, subject):
+    rank = student[('rank_school_cmp', subject)]
+    return rank
+
+
+@register.filter(name="rank_diff")
+def get_rank_diff(student, subject):
+    rank = student[('rank_diff', subject)]
+    return rank

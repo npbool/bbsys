@@ -196,7 +196,8 @@ class AnalyzeRecordForm(BSForm):
     )
     school_prop = forms.MultipleChoiceField(
         choices=(
-            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in Student.PROP_CHOICES
+            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
+        Student.PROP_CHOICES
         ),
         label="类型",
         required=True
@@ -204,12 +205,24 @@ class AnalyzeRecordForm(BSForm):
 
     ANALYSIS_RANK = 1
     ANALYSIS_REL = 2
-    analysis_type = forms.ChoiceField(
+    analysis_type = forms.TypedChoiceField(
         choices=(
             (ANALYSIS_RANK, "名次"),
             (ANALYSIS_REL, "进退")
         ),
+        coerce=lambda x: int(x),
         label="分析"
+    )
+
+    semester_cmp = forms.ModelChoiceField(
+        queryset=Semester.objects.all(),
+        label="比较学期",
+        required=False,
+    )
+    exam_cmp = forms.ModelChoiceField(
+        queryset=Exam.objects.all(),
+        label="比较考试",
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -217,13 +230,14 @@ class AnalyzeRecordForm(BSForm):
         all_classes = [r['class_idx'] for r in Student.objects.all().values('class_idx').distinct()]
         self.fields['classes'] = forms.MultipleChoiceField(
             choices=list(zip(all_classes, all_classes)),
+            label="班级",
             initial=all_classes
         )
         self.fields['subjects'].initial = [s.pk for s in Subject.objects.all()]
 
-        # self.helper.layout = Layout(
-        #      'semester', 'exam', 'grade', 'subjects', 'school_prop', 'analysis_type'
-        # )
+        self.helper.layout = Layout(
+             'semester', 'exam', 'grade', 'classes', 'subjects', 'school_prop', 'analysis_type', 'semester_cmp', 'exam_cmp'
+        )
         self.helper.form_id = 'id-query-form'
 
     def clean(self):
