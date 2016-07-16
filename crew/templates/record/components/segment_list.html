@@ -1,5 +1,7 @@
 {% load rank_tags %}
+{% for subject_name,df,agg,segments in data %}
 <table class="table table-striped table-bordered table-condensed">
+  <caption>{{ subject_name }} 分数段</caption>
   <thead>
   <tr>
     <th>班级</th>
@@ -10,7 +12,7 @@
   </tr>
   </thead>
   <tbody>
-  {% for row in data %}
+  {% for row in df %}
     <tr>
       <td>{{ row|value:'class_idx' }}</td>
       <td>{{ row|value:'total' }}</td>
@@ -28,3 +30,4 @@
   </tr>
   </tbody>
 </table>
+{% endfor %}

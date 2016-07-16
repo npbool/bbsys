@@ -262,6 +262,8 @@ class AnalysisSegForm(BSForm):
         label="类型",
         required=True
     )
+    show_total = forms.BooleanField(label="统计总分", initial=True, required=False)
+    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -272,11 +274,6 @@ class AnalysisSegForm(BSForm):
         cleaned_data = super().clean()
         if 'school_props' in cleaned_data:
             cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_props']]
-        return cleaned_data
+        if (not cleaned_data.get('show_total', False)) and (not cleaned_data.get('show_subjects', [])):
+            self.add_error('show_subjects', '总分和单科至少选一项')
 
-# class SubSegForm(Ana):
-#     pass
-#
-#
-# class TotalSegForm():
-#     pass

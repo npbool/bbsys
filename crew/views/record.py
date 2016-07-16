@@ -189,16 +189,21 @@ def record_segment_analysis(request):
     if request.method == 'POST':
         form = AnalysisSegForm(request.POST)
         if form.is_valid():
-            ana = analysis.SegmentAnalysis(form)
-            cnt_df = ana.get_df()
-            agg = cnt_df.sum(axis=0)
-            context = {
-                'form': form,
-                'agg': agg.to_dict(),
-                'data': cnt_df.to_dict('records'),
-                'segments': ana.segments
-            }
+            try:
+                ana = analysis.SegmentAnalysis(form)
+                df_list = ana.get_df_list()
 
-            return render(request, 'record/segment.html', context)
-    form = AnalysisSegForm()
+                context = {
+                    'form': form,
+                    'data': [
+                        (subject_name, df.to_dict('records'), agg.to_dict(), segments) for (subject_name, df, agg, segments) in df_list
+                    ],
+                    'segments': ana.segments
+                }
+
+                return render(request, 'record/segment.html', context)
+            except analysis.AnalysisError as e:
+                return render(request, 'record/segment.html', {'error': str(e), 'form': form})
+    else:
+        form = AnalysisSegForm()
     return render(request, 'record/segment.html', {'form': form})

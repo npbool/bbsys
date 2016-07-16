@@ -22,7 +22,9 @@
     </div>
     <div class="col-md-8 col-sm-7">
       <h1>分数段分析</h1>
-      <div id="id-message"></div>
+      {% if error %}
+        <div id="id-message" class="alert alert-danger" role="alert">{{ error }}</div>
+      {% endif %}
       <div id="id-main-content">
         {% if data %}
           {% include 'record/components/segment_list.html'%}
