@@ -268,6 +268,12 @@ class ClassAnalysisForm(BSForm):
         self.helper.form_tag = False
         self.fields['semester'].initial = Semester.objects.first()
 
+    def clean(self):
+        cleaned_data = super().clean()
+        if 'school_props' in cleaned_data:
+            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_props']]
+        return cleaned_data
+
 
 class AnalysisSegForm(ClassAnalysisForm):
     show_total = forms.BooleanField(label="统计总分", initial=True, required=False)
@@ -278,12 +284,13 @@ class AnalysisSegForm(ClassAnalysisForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        if 'school_props' in cleaned_data:
-            cleaned_data['school_props'] = [s.split(' ') for s in cleaned_data['school_props']]
         if (not cleaned_data.get('show_total', False)) and (not cleaned_data.get('show_subjects', [])):
             self.add_error('show_subjects', '总分和单科至少选一项')
+        return cleaned_data
 
 
 class AnalysisAvgForm(ClassAnalysisForm):
+    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

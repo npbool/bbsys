@@ -196,8 +196,9 @@ def record_segment_analysis(request):
                 context = {
                     'form': form,
                     'data': [
-                        (subject_name, df.to_dict('records'), agg.to_dict(), [int(x) for x in segments.split(',')]) for (subject_name, df, agg, segments) in df_list
-                    ],
+                        (subject_name, df.to_dict('records'), agg.to_dict(), [int(x) for x in segments.split(',')]) for
+                        (subject_name, df, agg, segments) in df_list
+                        ],
                 }
                 return render(request, 'record/segment.html', context)
             except analysis.AnalysisError as e:
@@ -205,3 +206,27 @@ def record_segment_analysis(request):
     else:
         form = AnalysisSegForm()
     return render(request, 'record/segment.html', {'form': form})
+
+
+@require_http_methods(['GET', 'POST'])
+def record_average_analysis(request):
+    if request.method == 'POST':
+        form = AnalysisAvgForm(request.POST)
+        if form.is_valid():
+            try:
+                ana = analysis.AverageAnalysis(form)
+                df = ana.get_df()
+                # print(df)
+                context = {
+                    'form': form,
+                    'data': df.to_dict('records'),
+                    'subjects': [s.name for s in ana.show_subjects]
+                }
+                print(context['data'])
+                return render(request, 'record/average.html', context)
+            except analysis.AnalysisError as e:
+                print(e)
+                return render(request, 'record/average.html', {'form': form, 'error': e})
+    else:
+        form = AnalysisAvgForm()
+    return render(request, 'record/average.html', {'form': form})

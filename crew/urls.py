@@ -13,5 +13,6 @@ urlpatterns = [
     url(r'^record/input$', record_input, name="record_input"),
     url(r'^record/analysis$', record_analysis, name="record_analysis"),
     url(r'^record/api_analysis$', api_record_analysis),
-    url(r'^record/segment/$', record_segment_analysis, name="record_segment_analysis")
+    url(r'^record/segment/$', record_segment_analysis, name="record_segment_analysis"),
+    url(r'^record/average/$', record_average_analysis, name="record_average_analysis"),
 ]
