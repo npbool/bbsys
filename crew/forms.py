@@ -249,7 +249,7 @@ class AnalyzeRecordForm(BSForm):
         return cleaned_data
 
 
-class AnalysisSegForm(BSForm):
+class ClassAnalysisForm(BSForm):
     semester = forms.ModelChoiceField(label="学期", queryset=Semester.objects.all())
     exam = forms.ModelChoiceField(label="考试", queryset=Exam.objects.all())
     grade = forms.TypedChoiceField(label="年级", choices=Choices.GRADE_CHOICES, coerce=lambda x: int(x))
@@ -262,13 +262,19 @@ class AnalysisSegForm(BSForm):
         label="类型",
         required=True
     )
-    show_total = forms.BooleanField(label="统计总分", initial=True, required=False)
-    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper.form_tag = False
         self.fields['semester'].initial = Semester.objects.first()
+
+
+class AnalysisSegForm(ClassAnalysisForm):
+    show_total = forms.BooleanField(label="统计总分", initial=True, required=False)
+    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -277,3 +283,7 @@ class AnalysisSegForm(BSForm):
         if (not cleaned_data.get('show_total', False)) and (not cleaned_data.get('show_subjects', [])):
             self.add_error('show_subjects', '总分和单科至少选一项')
 
+
+class AnalysisAvgForm(ClassAnalysisForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

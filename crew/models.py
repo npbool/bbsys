@@ -1,6 +1,6 @@
 # coding: utf8
 from django.db import models
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 
 
 class Choices:
@@ -115,7 +115,12 @@ class Subject(models.Model):
     belong_art = models.BooleanField(verbose_name="文科是否统计", default=False)
     belong_universal = models.BooleanField(verbose_name="不分科是否统计", default=False)
     total_score = models.IntegerField(verbose_name="满分")
-    segments = SegmentsField(verbose_name="分数段", default=[], max_length=1024)
+    segments = models.CommaSeparatedIntegerField(verbose_name="分数段", default=[], max_length=1024)
+
+    ratio_validators = [MaxValueValidator(1, "比例不能超过1"), MinValueValidator(0, "比例不能小于0")]
+    excellent_ratio = models.FloatField(verbose_name="优比例", default=0.9, validators=ratio_validators)
+    good_ratio = models.FloatField(verbose_name="良比例", default=0.8, validators=ratio_validators)
+    pass_ratio = models.FloatField(verbose_name="及格比例", default=0.6, validators=ratio_validators)
 
     def __str__(self):
         return self.name
@@ -203,9 +208,9 @@ class Department(models.Model):
 class SystemSettings(models.Model):
     default_semester = models.ForeignKey(Semester)
     default_exam = models.ForeignKey(Exam)
-    science_segments = SegmentsField(max_length=1024, verbose_name="理科分数段")
-    art_segments = SegmentsField(max_length=1024, verbose_name="文科分数段")
-    universal_segments = SegmentsField(max_length=1024, verbose_name="不分科分数段")
+    science_segments = models.CommaSeparatedIntegerField(max_length=1024, verbose_name="理科分数段")
+    art_segments = models.CommaSeparatedIntegerField(max_length=1024, verbose_name="文科分数段")
+    universal_segments = models.CommaSeparatedIntegerField(max_length=1024, verbose_name="不分科分数段")
 
     @staticmethod
     def get_instance():
@@ -220,3 +225,4 @@ class Person(models.Model):
     name = models.CharField(max_length=10)
     dept = models.ForeignKey(Department)
     grade = models.IntegerField(choices=Choices.GRADE_CHOICES)
+

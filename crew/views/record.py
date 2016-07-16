@@ -196,11 +196,9 @@ def record_segment_analysis(request):
                 context = {
                     'form': form,
                     'data': [
-                        (subject_name, df.to_dict('records'), agg.to_dict(), segments) for (subject_name, df, agg, segments) in df_list
+                        (subject_name, df.to_dict('records'), agg.to_dict(), [int(x) for x in segments.split(',')]) for (subject_name, df, agg, segments) in df_list
                     ],
-                    'segments': ana.segments
                 }
-
                 return render(request, 'record/segment.html', context)
             except analysis.AnalysisError as e:
                 return render(request, 'record/segment.html', {'error': str(e), 'form': form})

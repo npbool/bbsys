@@ -184,20 +184,42 @@ def num_ge(df, segments):
     res = {
         seg: (df > seg).sum() for seg in segments
         }
-    res['total'] = len(df)-pd.isnull(df).sum()
+    res['total'] = len(df) - pd.isnull(df).sum()
     return res
 
 
-class SegmentAnalysis:
+class ClassBasedAnalysis:
     def __init__(self, form):
         self.semester = form.cleaned_data['semester']
         self.exam = form.cleaned_data['exam']
         self.category = form.cleaned_data['category']
         self.grade = form.cleaned_data['grade']
         self.school_props = form.cleaned_data['school_props']
-        self.show_total = form.cleaned_data['show_total']
-        self.show_subjects = form.cleaned_data['show_subjects']
         self.subjects = list(Subject.category_subjects(self.category))
+
+        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
+        self.students = Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)
+        self.record_df, self.subject_list = load_records(self.exam, self.semester, self.subjects, self.students)
+
+
+class AverageAnalysis:
+    def __init__(self, form):
+        super(AverageAnalysis, self).__init__(form)
+        self.show_subjects = [s for s in form.cleaned_data['show_subjects'] if s in self.subjects]
+
+    def get_df(self):
+        df = self.record_df
+        for subject in self.show_subjects:
+            s = df['score', subject.name]
+            ratio_df = s.groupby(df['class_idx']).apply()
+
+
+
+class SegmentAnalysis(ClassBasedAnalysis):
+    def __init__(self, form):
+        super(SegmentAnalysis, self).__init__(form)
+        self.show_total = form.cleaned_data['show_total']
+        self.show_subjects = [s for s in form.cleaned_data['show_subjects'] if s in self.subjects]
 
         sys_setting = SystemSettings.get_instance()
         if self.category == 'L':
@@ -207,26 +229,20 @@ class SegmentAnalysis:
         else:
             self.segments = sys_setting.universal_segments
 
-        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
-        self.students = Student.objects.filter(conds).filter(grade_idx=self.grade)
-        self.record_df, self.subject_list = load_records(self.exam, self.semester, self.subjects, self.students)
-
     def get_df_list(self):
         df = self.record_df
         df_list = []
         if self.show_total:
             s = df['score', '总分']
-            cnt_df = s.groupby(df['class_idx']).apply(num_ge, segments=self.segments).unstack(-1)
+            cnt_df = s.groupby(df['class_idx']).apply(num_ge, segments=[int(x) for x in self.segments.split(',')]).unstack(-1)
             cnt_df['class_idx'] = cnt_df.index
             agg = cnt_df.sum(axis=0)
             df_list.append(('总分', cnt_df, agg, self.segments))
         for subject in self.show_subjects:
             s = df['score', subject.name]
-            cnt_df = s.groupby(df['class_idx']).apply(num_ge, segments=subject.segments).unstack(-1)
+            cnt_df = s.groupby(df['class_idx']).apply(num_ge, segments=[int(x) for x in subject.segments.split(',')]).unstack(-1)
             cnt_df['class_idx'] = cnt_df.index
             agg = cnt_df.sum(axis=0)
             df_list.append((subject.name, cnt_df, agg, subject.segments))
 
         return df_list
-
-
