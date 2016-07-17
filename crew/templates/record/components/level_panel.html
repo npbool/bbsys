@@ -1,0 +1,33 @@
+{% load crispy_forms_tags %}
+<div class="row">
+  <div class="col-md-4 col-sm-4">
+    {% crispy form %}
+  </div>
+  <div class="col-md-8 col-sm-8">
+    {% crispy rank_form %}
+    <table class="table table-bordered table-condensed">
+      <thead>
+      <tr>
+        <th>科目</th>
+        <th>一本分数</th>
+        <th>二本分数</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for score_form in score_formset %}
+        <tr>
+          <td>
+            {{ score_form.subject_name }}
+          </td>
+          <td>
+            {{ score_form.level_a_score }}
+          </td>
+          <td>
+            {{ score_form.level_b_score }}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

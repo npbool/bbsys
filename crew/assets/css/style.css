@@ -45,7 +45,16 @@ td.rank-down {
 .panel-compact .panel-body {
     font-size: 11px;
 }
-
+.panel-compact .form-group {
+    margin-bottom: 5px;
+}
+.panel-compact .form-control {
+    font-size: 11px;
+    height: 25px;
+}
+.panel-compact select[multiple] {
+    height: auto;
+}
 
 .stat-table th, .stat-table td{
     text-align: center;

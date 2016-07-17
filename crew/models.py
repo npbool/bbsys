@@ -29,7 +29,7 @@ class Choices:
     GRADE_J3 = -3
     GRADE_CHOICES = (
         (GRADE_S1, "高一年级"),
-        (GRADE_S3, "高二年级"),
+        (GRADE_S2, "高二年级"),
         (GRADE_S3, "高三年级"),
         (GRADE_J1, "初一年级"),
         (GRADE_J2, "初二年级"),
@@ -139,6 +139,8 @@ class Subject(models.Model):
     excellent_ratio = models.FloatField(verbose_name="优比例", default=0.9, validators=ratio_validators)
     good_ratio = models.FloatField(verbose_name="良比例", default=0.8, validators=ratio_validators)
     pass_ratio = models.FloatField(verbose_name="及格比例", default=0.6, validators=ratio_validators)
+    level_a_score = models.FloatField(verbose_name="一本分数")
+    level_b_score = models.FloatField(verbose_name="二本分数")
 
     def __str__(self):
         return self.name
@@ -293,6 +295,20 @@ class SystemSettings(models.Model):
     class Meta:
         verbose_name = "系统设置"
         verbose_name_plural = verbose_name
+
+
+class Grade(models.Model):
+    id = models.IntegerField(primary_key=True, choices=Choices.GRADE_CHOICES)
+    level_a_rank = models.IntegerField()
+    level_b_rank = models.IntegerField()
+
+    @classmethod
+    def get_by_display(cls, display):
+        id = Choices.display_to_value(display, Choices.GRADE_CHOICES)
+        return cls.objects.get(id=id)
+
+    def __str__(self):
+        return self.get_id_display()
 
 
 class Person(models.Model):

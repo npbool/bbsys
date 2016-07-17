@@ -6,12 +6,15 @@ from crew.models import Student, Exam, Subject, Record, Semester, Choices
 
 
 class BSForm(forms.Form):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, horizontal=True, *args, **kwargs):
         super(BSForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.label_class = 'col-md-3 col-sm-4'
-        self.helper.field_class = 'col-md-9 col-sm-8'
+        if horizontal:
+            self.helper.form_class = 'form-horizontal'
+            self.helper.label_class = 'col-md-3 col-sm-4'
+            self.helper.field_class = 'col-md-9 col-sm-8'
+        else:
+            self.helper.form_class = "form"
         self.helper.html5_required = True
 
 
@@ -302,3 +305,6 @@ class AnalysisAvgCmpForm(AnalysisAvgForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+

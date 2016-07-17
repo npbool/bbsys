@@ -5,7 +5,7 @@ from django.views.decorators.http import require_http_methods, require_GET, requ
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db import IntegrityError
-from django.db.models import Q
+from django.forms import formset_factory
 from crew.forms import *
 from crew.models import *
 from crew.util import JSONResponse, debug_print
@@ -244,7 +244,7 @@ def record_average_cmp_analysis(request):
                 context = {
                     'form': form,
                     'data': zip(df.to_dict('records'), df_cmp.to_dict('records')),
-                    'subjects': [s.name for s in ana.show_subjects]+['总分'],
+                    'subjects': [s.name for s in ana.show_subjects] + ['总分'],
                     'exam': ana.exam.name,
                     'exam_cmp': ana.exam_cmp.name,
                     'agg': agg,
@@ -257,3 +257,21 @@ def record_average_cmp_analysis(request):
     else:
         form = AnalysisAvgCmpForm()
     return render(request, 'record/average_cmp.html', {'form': form})
+
+
+@require_http_methods(['GET', 'POST'])
+def record_level_analysis(request):
+    if request.method == 'POST':
+        pass
+
+    form = AnalysisLevelForm()
+    rank_form = LevelRankForm(initial={
+        'level_a_rank': 50, 'level_b_rank': 120
+    })
+    score_formset = LevelSubjectScoreFormSet(initial=[{
+                                                          'subject_name': subject.name,
+                                                          'subject_pk': subject.pk,
+                                                          'level_a_score': subject.level_a_score,
+                                                          'level_b_score': subject.level_b_score,
+                                                      } for subject in Subject.objects.all()])
+    return render(request, 'record/level.html', {'form': form, 'rank_form': rank_form, 'score_formset': score_formset})
