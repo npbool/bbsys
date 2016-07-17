@@ -1,0 +1,68 @@
+{% load average_tags %}
+<div class="table-container">
+  <table class="table table-striped table-bordered table-condensed stat-table">
+    <thead>
+    <tr>
+      <th rowspan="3" class="school">学校</th>
+      <th rowspan="3" class="klass">班级</th>
+      {% for subject in subjects %}
+        <th colspan="7">{{ subject }}</th>
+      {% endfor %}
+      <th rowspan="3" class="name">班主任</th>
+    </tr>
+    <tr>
+      {% for subject in subjects %}
+        <th colspan="3">{{ exam_cmp }}</th>
+        <th colspan="3">{{ exam }}</th>
+        <th rowspan="2" class="rank">进退</td>
+      {% endfor %}
+    </tr>
+    <tr>
+      {% for subject in subjects %}
+        <th class="score">均分</td>
+        <th class="rank">名次</td>
+        <th class="score">离差</td>
+        <th class="score">均分</td>
+        <th class="rank">名次</th>
+        <th class="score">离差</td>
+      {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row, row_cmp in data %}
+      <tr>
+        <td>{{ row|school }}</td>
+        <td>{{ row|grade }}{{ row|class_idx }}班</td>
+        {% for subject in subjects %}
+          <td>{{ row|mean:subject }}</td>
+          <td>{{ row|mean_rank:subject }}</td>
+          <td>{{ row|mean_diff:subject }}</td>
+          <td>{{ row_cmp|mean:subject }}</td>
+          <td>{{ row_cmp|mean_rank:subject }}</td>
+          <td>{{ row_cmp|mean_diff:subject }}</td>
+          {% if row|rank_rise:subject >= 0 %}
+            <td class="rank-up">{{ row|rank_rise:subject }}</td>
+          {% else %}
+            <td class="rank-down">{{ row|rank_rise:subject }}</td>
+          {% endif %}
+        {% endfor %}
+        <td>{{ row|manager }}</td>
+
+      </tr>
+    {% endfor %}
+    <tr>
+      <td>年级</td>
+      <td/>
+      {% for subject in subjects %}
+        <td>{{ agg|mean:subject }}</td>
+        <td/>
+        <td/>
+        <td>{{ agg_cmp|mean:subject }}</td>
+        <td/>
+        <td/>
+        <td/>
+      {% endfor %}
+    </tr>
+    </tbody>
+  </table>
+</div>

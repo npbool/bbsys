@@ -239,7 +239,18 @@ def record_average_cmp_analysis(request):
         if form.is_valid():
             try:
                 ana = analysis.AverageCmpAnalysis(form)
-                df = ana.get_df()
+                df, df_cmp = ana.get_df()
+                agg, agg_cmp = ana.get_agg()
+                context = {
+                    'form': form,
+                    'data': zip(df.to_dict('records'), df_cmp.to_dict('records')),
+                    'subjects': [s.name for s in ana.show_subjects]+['总分'],
+                    'exam': ana.exam.name,
+                    'exam_cmp': ana.exam_cmp.name,
+                    'agg': agg,
+                    'agg_cmp': agg_cmp,
+                }
+                return render(request, 'record/average_cmp.html', context)
             except analysis.AnalysisError as e:
                 return render(request, 'record/average_cmp.html', {'form': form, 'error': e})
 

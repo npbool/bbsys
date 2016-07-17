@@ -2,33 +2,38 @@
     overflow: scroll;
     max-height: 600px;
 }
-.rank-table {
+table {
     font-size: 10px;
 }
-.rank-table .name {
+table th.name {
     min-width: 70px;
 }
-.rank-table .score {
-    min-width: 50px;
-}
-.rank-table .rank {
+table th.score {
     min-width: 40px;
 }
-.rank-table .student-id {
+table th.rank {
+    min-width: 40px;
+}
+table th.student-id {
     min-width: 80px;
 }
-.rank-table .school {
-    min-width: 80px;
-}
-.rank-table .grade {
+table th.school {
     min-width: 70px;
 }
-.rank-table .class {
+table th.grade {
+    min-width: 70px;
+}
+table th.class {
     min-width: 40px;
 }
-.rank-table .prop {
+table th.prop {
     min-width: 50px;
 }
+
+table th.klass {
+    min-width: 80px;
+}
+
 
 td.rank-up {
     color: red;
@@ -39,4 +44,9 @@ td.rank-down {
 
 .panel-compact .panel-body {
     font-size: 11px;
+}
+
+
+.stat-table th, .stat-table td{
+    text-align: center;
 }

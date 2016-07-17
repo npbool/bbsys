@@ -44,6 +44,20 @@ def load_records(exam, semester, subjects, students):
     return df, subject_columns
 
 
+def load_teachers(grade_idx):
+    managers = ClassTeacher.objects.filter(grade_idx=grade_idx, ).select_related('teacher', 'subject')
+    df = pd.DataFrame.from_dict([
+                                      {'school': t.get_school_display(),
+                                       'grade': t.get_grade_idx_display(),
+                                       'class_idx': t.class_idx,
+                                       'subject': "班主任" if t.subject is None else t.subject.name,
+                                       'name': t.teacher.name} for t in managers
+                                      ])
+    df.set_index(['school', 'grade', 'class_idx', 'subject'], inplace=True)
+    return df['name'].unstack(-1)
+
+
+
 
 class AnalysisError(Exception):
     pass

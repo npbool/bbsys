@@ -2,7 +2,7 @@ import functools
 import itertools
 import pandas as pd
 import numpy as np
-from .util import load_records, ClassBasedAnalysis, AnalysisError
+from .util import load_records, load_teachers, ClassBasedAnalysis, AnalysisError
 from .rank import rank_series
 
 
@@ -74,12 +74,39 @@ class AverageCmpAnalysis(ClassBasedAnalysis):
         self.record_df_cmp, self.subject_list_cmp = load_records(self.exam_cmp, self.semester_cmp, self.subjects,
                                                                  self.students)
 
-        self.show_subjects = [s for s in form.cleaned_data['show_subjects'] if
-                              s in self.subjects and s in self.subject_list_cmp]
+        self.show_subjects = [s for s in form.cleaned_data['show_subjects'] if s in self.subjects]
+
+    def proc_df(self, df):
+        dfs = []
+        for subject_name in [subject.name for subject in self.show_subjects] + ['总分']:
+            print(subject_name)
+            s = df['score', subject_name]
+            mean = s.mean()
+            group_mean = s.groupby((df['school'], df['grade'], df['class_idx'])).mean()
+            subject_df = pd.DataFrame(data={
+                ('mean', subject_name): group_mean,
+                ('mean_diff', subject_name): group_mean - mean,
+                ('mean_rank', subject_name): rank_series(group_mean).astype(np.int)
+            })
+            dfs.append(subject_df)
+        return pd.concat(dfs, axis=1)
+
+    def agg_df(self, df):
+        agg = {}
+        for subject_name in [subject.name for subject in self.show_subjects] + ['总分']:
+            agg[('mean', subject_name)] = df['score', subject_name].mean()
+        return agg
 
     def get_df(self):
-        df = self.record_df
-        df_cmp = self.record_df_cmp
+        df, df_cmp = self.proc_df(self.record_df), self.proc_df(self.record_df_cmp)
+        teacher_df = load_teachers(grade_idx=self.grade)
+        df = pd.merge(df, teacher_df, left_index=True, right_index=True, how="left")
+        for subject_name in [subject.name for subject in self.show_subjects] + ['总分']:
+            df['rank_rise', subject_name] = df['mean_rank', subject_name] - df_cmp['mean_rank', subject_name]
 
-        for subject in self.show_subjects:
-            pass
+        df.reset_index(inplace=True)
+        df_cmp.reset_index(inplace=True)
+        return df, df_cmp
+
+    def get_agg(self):
+        return self.agg_df(self.record_df), self.agg_df(self.record_df_cmp)

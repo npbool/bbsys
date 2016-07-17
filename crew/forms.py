@@ -297,5 +297,8 @@ class AnalysisAvgForm(ClassAnalysisForm):
 
 
 class AnalysisAvgCmpForm(AnalysisAvgForm):
-    semester = forms.ModelChoiceField(label="比较学期", queryset=Semester.objects.all())
-    exam = forms.ModelChoiceField(label="比较考试", queryset=Exam.objects.all())
+    semester_cmp = forms.ModelChoiceField(label="比较学期", queryset=Semester.objects.all())
+    exam_cmp = forms.ModelChoiceField(label="比较考试", queryset=Exam.objects.all())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
