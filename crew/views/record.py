@@ -230,3 +230,19 @@ def record_average_analysis(request):
     else:
         form = AnalysisAvgForm()
     return render(request, 'record/average.html', {'form': form})
+
+
+@require_http_methods(['GET', 'POST'])
+def record_average_cmp_analysis(request):
+    if request.method == 'POST':
+        form = AnalysisAvgCmpForm(request.POST)
+        if form.is_valid():
+            try:
+                ana = analysis.AverageCmpAnalysis(form)
+                df = ana.get_df()
+            except analysis.AnalysisError as e:
+                return render(request, 'record/average_cmp.html', {'form': form, 'error': e})
+
+    else:
+        form = AnalysisAvgCmpForm()
+    return render(request, 'record/average_cmp.html', {'form': form})

@@ -44,6 +44,7 @@ def load_records(exam, semester, subjects, students):
     return df, subject_columns
 
 
+
 class AnalysisError(Exception):
     pass
 

@@ -16,8 +16,8 @@
         <th>良</th>
         <th>优良</th>
         <th>及格</th>
-        <th>名次</th>
         <th>均分</th>
+        <th>名次</th>
         <th>离差</th>
       {% endfor %}
     <th>名次</th>
@@ -35,12 +35,12 @@
           <td>{{ row|good:subject }}</td>
           <td>{{ row|excellent_and_good:subject }}</td>
           <td>{{ row|pass:subject }}</td>
-          <td>{{ row|rank_mean:subject }}</td>
           <td>{{ row|mean:subject }}</td>
+          <td>{{ row|mean_rank:subject }}</td>
           <td>{{ row|mean_diff:subject }}</td>
         {% endfor %}
-        <td>{{ row|rank_mean:'总分' }}</td>
         <td>{{ row|mean:'总分' }}</td>
+        <td>{{ row|mean_rank:'总分' }}</td>
         <td>{{ row|mean_diff:'总分' }}</td>
         </tr>
       {% endfor %}
