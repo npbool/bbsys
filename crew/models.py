@@ -14,6 +14,13 @@ class Choices:
         ('QZ', "群众")
     )
 
+    SCHOOL_BB = "BB"
+    SCHOOL_BX = "BX"
+    SCHOOL_CHOICES = (
+        (SCHOOL_BB, "博白(0646)"),
+        (SCHOOL_BX, "博学(0657)")
+    )
+
     GRADE_S1 = 1
     GRADE_S2 = 2
     GRADE_S3 = 3
@@ -33,6 +40,13 @@ class Choices:
         (0, "非农业户口"),
         (1, "农业户口")
     )
+
+    @staticmethod
+    def display_to_value(display, choices):
+        for v, d in choices:
+            if d == display:
+                return v
+        raise ValueError(display + " is not a valid display value")
 
 
 class SegmentsField(models.CharField):
@@ -70,13 +84,7 @@ class Student(models.Model):
     name = models.CharField(max_length=6, verbose_name="姓名")
     gender = models.CharField(max_length=1, choices=Choices.GENDER_CHOICES, verbose_name="性别")
 
-    SCHOOL_BB = "BB"
-    SCHOOL_BX = "BX"
-    SCHOOL_CHOICES = (
-        (SCHOOL_BB, "博白(0646)"),
-        (SCHOOL_BX, "博学(0657)")
-    )
-    school = models.CharField(max_length=2, choices=SCHOOL_CHOICES, verbose_name="学校")
+    school = models.CharField(max_length=2, choices=Choices.SCHOOL_CHOICES, verbose_name="学校")
     PROP_CHOICES = (
         ('Y', "应届生"),
         ('W', "往届生")
@@ -97,6 +105,9 @@ class Student(models.Model):
         return self.name + "_" + self.get_school_display() + "_" + self.get_grade_idx_display() + "_" + str(
             self.class_idx)
 
+    class Meta:
+        verbose_name_plural = verbose_name = "学生"
+
 
 class Staff(models.Model):
     staff_id = models.IntegerField()
@@ -105,8 +116,15 @@ class Staff(models.Model):
 
     phone = models.CharField(max_length=15, validators=[phone_validator])
     department = models.ForeignKey("Department", blank=True, null=True)
-    teaching_grade = models.IntegerField(choices=Choices.GRADE_CHOICES)
     teaching_subject = models.ForeignKey("Subject")
+
+    def __str__(self):
+        return "{staff_id} {name} - {teaching_subject} - {dept}".format(staff_id=self.staff_id, name=self.name,
+                                                                        teaching_subject=self.teaching_subject,
+                                                                        dept=self.department)
+
+    class Meta:
+        verbose_name = verbose_name_plural = "职工"
 
 
 class Subject(models.Model):
@@ -151,6 +169,59 @@ class Subject(models.Model):
             return Subject.objects.filter(belong_universal=True)
         else:
             raise ValueError("category illegal")
+
+
+class ClassTeacher(models.Model):
+    school = models.CharField(max_length=2, choices=Choices.SCHOOL_CHOICES, verbose_name="学校")
+    grade_idx = models.IntegerField(choices=Choices.GRADE_CHOICES, verbose_name="年级")
+    class_idx = models.IntegerField(verbose_name="班级")
+    subject = models.ForeignKey('Subject', null=True, blank=True)
+    teacher = models.ForeignKey('Staff')
+
+    class Meta:
+        unique_together = ('school', 'grade_idx', 'class_idx', 'subject')
+        verbose_name = verbose_name_plural = "任课教师/班主任"
+
+    def __str__(self):
+        return "{role} {school} {grade}{class_idx} {teacher}".format(
+            role="班主任" if self.subject is None else self.subject.name,
+            school=self.get_school_display(),
+            grade=self.get_grade_idx_display(),
+            class_idx=self.class_idx,
+            teacher=self.teacher.name
+        )
+
+    @classmethod
+    def get_teacher(cls, school_display, grade_display, class_idx, subject):
+        try:
+            school = Choices.display_to_value(school_display, Choices.SCHOOL_CHOICES)
+            grade_idx = Choices.display_to_value(grade_display, Choices.GRADE_CHOICES)
+            return cls.objects.get(school=school, grade_idx=grade_idx, class_idx=class_idx, subject=subject)
+        except cls.DoesNotExist:
+            return None
+
+    @classmethod
+    def get_manager(cls, school_display, grade_display, class_idx):
+        return cls.get_teacher(school_display, grade_display, class_idx, None)
+
+
+class Leader(models.Model):
+    school = models.CharField(max_length=2, choices=Choices.SCHOOL_CHOICES, verbose_name="学校")
+    grade_idx = models.IntegerField(choices=Choices.GRADE_CHOICES, verbose_name="年级")
+    teacher = models.ForeignKey('Staff')
+
+    class Meta:
+        verbose_name_plural = verbose_name = "教研组长"
+
+
+class SubjectLeader(models.Model):
+    school = models.CharField(max_length=2, choices=Choices.SCHOOL_CHOICES, verbose_name="学校")
+    grade_idx = models.IntegerField(choices=Choices.GRADE_CHOICES, verbose_name="年级")
+    subject = models.ForeignKey('Subject')
+    teacher = models.ForeignKey('Staff')
+
+    class Meta:
+        verbose_name_plural = verbose_name = "备课组长"
 
 
 class Exam(models.Model):
@@ -204,6 +275,9 @@ class Department(models.Model):
     def __str__(self):
         return str(self.pk) + ": " + self.name
 
+    class Meta:
+        verbose_name_plural = verbose_name = "部门"
+
 
 class SystemSettings(models.Model):
     default_semester = models.ForeignKey(Semester)
@@ -225,4 +299,3 @@ class Person(models.Model):
     name = models.CharField(max_length=10)
     dept = models.ForeignKey(Department)
     grade = models.IntegerField(choices=Choices.GRADE_CHOICES)
-

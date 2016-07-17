@@ -51,10 +51,10 @@ class QueryStudentForm(BSForm):
     )
     school = forms.MultipleChoiceField(
         label="学校",
-        choices=Student.SCHOOL_CHOICES,
+        choices=Choices.SCHOOL_CHOICES,
         widget=forms.CheckboxSelectMultiple,
         required=True,
-        initial=[s[0] for s in Student.SCHOOL_CHOICES]
+        initial=[s[0] for s in Choices.SCHOOL_CHOICES]
     )
     prop = forms.MultipleChoiceField(
         label="类别",
@@ -196,7 +196,7 @@ class AnalyzeRecordForm(BSForm):
     )
     school_props = forms.MultipleChoiceField(
         choices=(
-            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
+            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Choices.SCHOOL_CHOICES for prop in
             Student.PROP_CHOICES
         ),
         label="类型",
@@ -256,7 +256,7 @@ class ClassAnalysisForm(BSForm):
     category = forms.ChoiceField(label="文理", choices=Student.CATEGORY_CHOICES, initial='U')
     school_props = forms.MultipleChoiceField(
         choices=(
-            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Student.SCHOOL_CHOICES for prop in
+            (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Choices.SCHOOL_CHOICES for prop in
             Student.PROP_CHOICES
         ),
         label="类型",
