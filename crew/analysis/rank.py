@@ -7,6 +7,7 @@ import functools
 import operator
 from django.db.models import Q
 from crew.util import debug_print
+from .util import load_records, ClassBasedAnalysis
 
 
 def rank_series(series):
@@ -17,48 +18,6 @@ def rank_df(df, subject_columns):
     return pd.DataFrame({
                             ('rank_class', subject): rank_series(df[('score', subject)]) for subject in subject_columns
                             }, dtype=np.int)
-
-
-class AnalysisError(Exception):
-    pass
-
-
-def load_records(exam, semester, subjects, students):
-    subject_df = pd.DataFrame(
-        index=[subject.id for subject in subjects],
-        data={'subject': [subject.name for subject in subjects]},
-    )
-
-    student_df = pd.DataFrame.from_records(
-        index=[s.id for s in students],
-        data={
-            'student_id': [s.student_id for s in students],
-            'exam_id': [s.student_id for s in students],
-            'name': [s.name for s in students],
-            'school': [s.get_school_display() for s in students],
-            'grade': [s.get_grade_idx_display() for s in students],
-            'class_idx': [s.class_idx for s in students],
-            'prop': [s.get_prop_display() for s in students],
-        }
-    )
-    if len(students) == 0:
-        raise AnalysisError("没有数据")
-
-    records = Record.objects.filter(exam=exam, semester=semester, subject__in=subjects, student__in=students)
-    if len(records) == 0:
-        raise AnalysisError("没有数据")
-    record_df = pd.DataFrame.from_records(
-        records.values('student_id', 'subject_id', 'score'),
-    ).merge(subject_df, left_on='subject_id', right_index=True)
-    record_df.drop(['subject_id'], axis=1, inplace=True)
-    record_df.set_index(['student_id', 'subject'], inplace=True)
-    record_df = record_df.unstack(-1)
-    record_df['score', '总分'] = record_df.sum(axis=1)
-
-    subject_columns = list(record_df['score'].columns)
-
-    df = pd.merge(student_df, record_df, left_index=True, right_index=True, how='outer')
-    return df, subject_columns
 
 
 def stat_rank(df, subject_columns):
@@ -186,83 +145,6 @@ def num_ge(df, segments):
         }
     res['total'] = len(df) - pd.isnull(df).sum()
     return res
-
-
-class ClassBasedAnalysis:
-    def __init__(self, form):
-        self.semester = form.cleaned_data['semester']
-        self.exam = form.cleaned_data['exam']
-        self.category = form.cleaned_data['category']
-        self.grade = form.cleaned_data['grade']
-        self.school_props = form.cleaned_data['school_props']
-        self.subjects = list(Subject.category_subjects(self.category))
-
-        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
-        self.students = Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)
-        self.record_df, self.subject_list = load_records(self.exam, self.semester, self.subjects, self.students)
-
-
-class AverageAnalysis(ClassBasedAnalysis):
-    def __init__(self, form):
-        super().__init__(form)
-        self.show_subjects = [s for s in form.cleaned_data['show_subjects'] if s in self.subjects]
-
-    @staticmethod
-    def group_subject_stat(df, subject, mean, total):
-        excellent_score = subject.total_score * subject.excellent_ratio
-        good_score = subject.total_score * subject.good_ratio
-        pass_score = subject.total_score * subject.pass_ratio
-        score = df['score', subject.name]
-        rank = df['rank', subject.name]
-
-        excellent_cnt = (score >= excellent_score).sum()
-        good_cnt = (score >= good_score).sum()
-        pass_cnt = (score >= pass_score).sum()
-        sn = subject.name
-        return pd.Series({
-            ('excellent', sn): excellent_cnt / total,
-            ('good', sn): (good_cnt - excellent_cnt) / total,
-            ('excellent_and_good', sn): good_cnt / total,
-            ('pass', sn): (pass_cnt - good_cnt) / total,
-            ('mean', sn): score.mean(),
-            ('rank_mean', sn): rank.mean(),
-            ('mean_diff', sn): score.mean() - mean
-        })
-
-    @staticmethod
-    def group_total_stat(df, mean):
-        score = df['score', '总分']
-        rank = df['rank', '总分']
-        return pd.Series({
-            ('mean', '总分'): score.mean(),
-            ('rank_mean', '总分'): rank.mean(),
-            ('mean_diff', '总分'): score.mean() - mean
-        })
-
-    def get_df(self):
-        df = self.record_df
-        # 总分
-        s = df['score', '总分']
-        df['rank', '总分'] = rank_series(s)
-        mean = s.mean()
-        res_df = df.groupby(['school', 'class_idx']).apply(AverageAnalysis.group_total_stat, mean = mean)
-        # 单科
-        for subject in self.show_subjects:
-            s = df['score', subject.name]
-            df['rank', subject.name] = rank_series(s)
-            mean = s.mean()
-            total = len(s) - pd.isnull(s).sum()
-            ratio_df = df.groupby(['school', 'class_idx']).apply(AverageAnalysis.group_subject_stat, subject=subject,
-                                                                 mean=mean,
-                                                                 total=total)
-            if res_df is None:
-                res_df = ratio_df
-            else:
-                res_df = pd.merge(res_df, ratio_df, left_index=True, right_index=True)
-        res_df['school'] = res_df.index.get_level_values(0)
-        res_df['class_idx'] = res_df.index.get_level_values(1)
-
-        return res_df
 
 
 class SegmentAnalysis(ClassBasedAnalysis):
