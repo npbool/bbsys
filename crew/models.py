@@ -288,9 +288,9 @@ class SystemSettings(models.Model):
     art_segments = models.CommaSeparatedIntegerField(max_length=1024, verbose_name="文科分数段")
     universal_segments = models.CommaSeparatedIntegerField(max_length=1024, verbose_name="不分科分数段")
 
-    @staticmethod
-    def get_instance():
-        return SystemSettings.objects.first()
+    @classmethod
+    def get_instance(cls):
+        return cls.objects.first()
 
     class Meta:
         verbose_name = "系统设置"

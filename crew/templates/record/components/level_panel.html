@@ -14,17 +14,22 @@
       </tr>
       </thead>
       <tbody>
+      {{ score_formset.management_form }}
       {% for score_form in score_formset %}
         <tr>
           <td>
             {{ score_form.subject_name }}
+            {{ score_form.subject_name.errors }}
           </td>
           <td>
             {{ score_form.level_a_score }}
+            {{ score_form.level_a_score.errors }}
           </td>
           <td>
             {{ score_form.level_b_score }}
+            {{ score_form.level_b_score.errors }}
           </td>
+          {{ score_form.subject_pk }}
         </tr>
       {% endfor %}
       </tbody>

@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-  <div class="row">
+  <div class="row" xmlns="http://www.w3.org/1999/html">
     <div class="col-md-4 col-sm-4">
       <div class="panel panel-primary panel-compact">
         <div class="panel-heading"><h3 class="panel-title">选择查询条件</h3></div>
@@ -11,22 +11,22 @@
           <form class="form-horizontal" action="{% url 'crew:record_level_analysis' %}" method="post">
             {% include "record/components/level_panel.html" %}
             <div class="btn-toolbar pull-right">
-              <input type="submit" class="btn btn-primary" id="id-btn-stat" value="统计"> </input>
-              <button class="btn btn-default" id="id-btn-export"><span class="glyphicon glyphicon-download-alt"></span>导出
-              </button>
+              <input type="submit" name="stat" class="btn btn-primary" id="id-btn-stat" value="统计"> </input>
+              <input type="submit" name="export" class="btn btn-default" id="id-btn-export"><span
+              class="glyphicon glyphicon-download-alt"></span>导出</input>
             </div>
           </form>
         </div>
       </div>
     </div>
     <div class="col-md-4 col-sm-4">
-      <h1>分数段分析</h1>
+      <h1>上线分析</h1>
       {% if error %}
         <div id="id-message" class="alert alert-danger" role="alert">{{ error }}</div>
       {% endif %}
       <div id="id-main-content">
-        {% if data %}
-          {% include 'record/components/segment_list.html'%}
+        {% if data_list %}
+          {% include 'record/components/level_list.html' %}
         {% endif %}
       </div>
     </div>

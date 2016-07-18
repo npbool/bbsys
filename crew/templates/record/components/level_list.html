@@ -1,0 +1,67 @@
+{% load level_tags %}
+{% for subject, data, agg in data_list %}
+  <table class="table table-striped table-bordered table-condensed stat-table">
+    <caption>{{ subject }}</caption>
+    <thead>
+    <tr>
+      <th rowspan="2" class="school">学校</th>
+      <th rowspan="2" class="klass">班级</th>
+      <th rowspan="2" class="valid_count">有效人数</th>
+      <th rowspan="2" class="score">最高分</th>
+      <th rowspan="2" class="score">平均分</th>
+      <th rowspan="2" class="score">离差</th>
+      <th colspan="6">上线人数</th>
+      <th rowspan="2" class="name">
+        {% ifequal subject "总分" %}班主任{% else %}教师{% endifequal %}
+      </th>
+    </tr>
+    <tr>
+      <th class="level">一本
+        {% if use_rank %} ({{ level_a_rank }}名){% else %} ({{ level_a_score|value:subject }}分) {% endif %}
+      </th>
+      <th class="level-ratio">一本上线率</th>
+      <th class="rank">名次</th>
+      <th class="level">二本
+        {% if use_rank %} ({{ level_b_rank }}名){% else %} ({{ level_b_score|value:subject }}分) {% endif %}
+      </th>
+      <th class="level-ratio">二本上线率</th>
+      <th class="rank">名次</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in data %}
+      <tr>
+        <td>{{ row|school }}</td>
+        <td>{{ row|grade }}{{ row|class_idx }}班</td>
+        <td>{{ row|valid_count:subject }}/{{ row|total_count:subject }}</td>
+        <td>{{ row|max_score:subject }}</td>
+        <td>{{ row|mean:subject }}</td>
+        <td>{{ row|mean_diff:subject }}</td>
+        <td>{{ row|level_a_count:subject }} </td>
+        <td>{{ row|level_a_ratio:subject }}</td>
+        <td>{{ row|level_a_rank:subject }}</td>
+        <td>{{ row|level_b_count:subject }} </td>
+        <td>{{ row|level_b_ratio:subject }}</td>
+        <td>{{ row|level_b_rank:subject }}</td>
+        <td>
+          {% ifequal subject "总分" %}{{ row|manager }} {% else %} {{ row|value:subject }} {% endifequal %}
+        </td>
+      </tr>
+    {% endfor %}
+    <tr>
+      <td colspan="2">合计</td>
+      <td>{{ agg|valid_count:subject }}/{{ agg|total_count:subject }}</td>
+      <td>{{ agg|max_score:subject }}</td>
+      <td>{{ agg|mean:subject }}</td>
+      <td></td>
+      <td colspan="2">{{ agg|level_a_count:subject }} </td>
+      <td></td>
+      <td colspan="2">{{ agg|level_b_count:subject }} </td>
+      <td></td>
+
+    </tr>
+    </tbody>
+  </table>
+{% endfor %}
+</table>
+

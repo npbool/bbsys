@@ -5,6 +5,7 @@ import operator
 import pandas as pd
 import numpy as np
 
+GROUP_KEYS = ['school', 'grade', 'class_idx']
 
 def load_records(exam, semester, subjects, students):
     subject_df = pd.DataFrame(

@@ -2,7 +2,7 @@ from django import forms
 from django.core.urlresolvers import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Button, Div, Field, Fieldset, ButtonHolder
-from crew.models import Student, Exam, Subject, Record, Semester, Choices
+from crew.models import Student, Exam, Subject, Record, Semester, Choices, SystemSettings
 
 
 class BSForm(forms.Form):
@@ -262,6 +262,9 @@ class ClassAnalysisForm(BSForm):
             (school[0] + ' ' + prop[0], school[1] + prop[1]) for school in Choices.SCHOOL_CHOICES for prop in
             Student.PROP_CHOICES
         ),
+        initial=(
+            [school[0] + ' ' + prop[0] for school in Choices.SCHOOL_CHOICES for prop in Student.PROP_CHOICES]
+        ),
         label="类型",
         required=True
     )
@@ -270,6 +273,7 @@ class ClassAnalysisForm(BSForm):
         super().__init__(*args, **kwargs)
         self.helper.form_tag = False
         self.fields['semester'].initial = Semester.objects.first()
+        self.fields['exam'].initial = SystemSettings.get_instance().default_exam
 
     def clean(self):
         cleaned_data = super().clean()

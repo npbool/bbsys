@@ -262,16 +262,42 @@ def record_average_cmp_analysis(request):
 @require_http_methods(['GET', 'POST'])
 def record_level_analysis(request):
     if request.method == 'POST':
-        pass
+        form = AnalysisLevelForm(request.POST)
+        rank_form = LevelRankForm(request.POST)
+        score_formset = LevelSubjectScoreFormSet(request.POST)
 
-    form = AnalysisLevelForm()
-    rank_form = LevelRankForm(initial={
-        'level_a_rank': 50, 'level_b_rank': 120
-    })
-    score_formset = LevelSubjectScoreFormSet(initial=[{
-                                                          'subject_name': subject.name,
-                                                          'subject_pk': subject.pk,
-                                                          'level_a_score': subject.level_a_score,
-                                                          'level_b_score': subject.level_b_score,
-                                                      } for subject in Subject.objects.all()])
+        if form.is_valid() and rank_form.is_valid() and score_formset.is_valid():
+            ana = analysis.LevelAnalysis(form, rank_form, score_formset)
+            df_list = ana.get_df_list()
+            agg_list = ana.get_agg_list()
+            context = {
+                'data_list': zip(['总分'] + [s.name for s in ana.show_subjects],
+                                 [df.to_dict('records') for df in df_list], [agg.to_dict() for agg in agg_list]),
+                'form': form,
+                'rank_form': rank_form,
+                'score_formset': score_formset,
+                'use_rank': ana.settings['use_rank'],
+                'level_a_rank': ana.settings['level_a_rank'],
+                'level_b_rank': ana.settings['level_b_rank'],
+                'level_a_score': ana.settings['level_a_score'],
+                'level_b_score': ana.settings['level_b_score'],
+            }
+            return render(request, 'record/level.html', context)
+    else:
+        form = AnalysisLevelForm()
+        rank_form = LevelRankForm(initial={
+            'level_a_rank': 50, 'level_b_rank': 120
+        })
+        score_formset = LevelSubjectScoreFormSet(initial=[{
+                                                              'subject_name': subject.name,
+                                                              'subject_pk': subject.pk,
+                                                              'level_a_score': subject.level_a_score,
+                                                              'level_b_score': subject.level_b_score,
+                                                          } for subject in Subject.objects.all()] +
+                                                         [{
+                                                             'subject_name': '总分',
+                                                             'subject_pk': -1,
+                                                             'level_a_score': 300,
+                                                             'level_b_score': 200,
+                                                         }])
     return render(request, 'record/level.html', {'form': form, 'rank_form': rank_form, 'score_formset': score_formset})

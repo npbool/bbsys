@@ -33,6 +33,9 @@ table th.prop {
 table th.klass {
     min-width: 80px;
 }
+th.level, th.level-ratio {
+    min-width: 70px;
+}
 
 
 td.rank-up {
