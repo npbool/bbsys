@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+{% block body %}
+  <style>
+  body {
+    background: url('{% static 'image/blur_bg.jpg' %}') center center no-repeat;
+  }
+  </style>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
+        <div class="page-header">
+        <h1>博中信息管理系统<small>登录</small></h1>
+        </div>
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

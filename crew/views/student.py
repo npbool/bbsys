@@ -15,8 +15,9 @@ from crew.forms import *
 import csv
 import xlrd
 
-
 page_size = settings.PAGE_SIZE
+
+
 # Create your views here.
 
 def student_query(request):

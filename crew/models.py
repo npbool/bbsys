@@ -1,7 +1,7 @@
 # coding: utf8
 from django.db import models
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
-
+from django.contrib.auth.admin import User
 
 class Choices:
     GENDER_CHOICES = (
@@ -117,6 +117,8 @@ class Staff(models.Model):
     phone = models.CharField(max_length=15, validators=[phone_validator])
     department = models.ForeignKey("Department", blank=True, null=True)
     teaching_subject = models.ForeignKey("Subject")
+
+    user = models.OneToOneField(User, related_name='staff', null=True, blank=True)
 
     def __str__(self):
         return "{staff_id} {name} - {teaching_subject} - {dept}".format(staff_id=self.staff_id, name=self.name,
