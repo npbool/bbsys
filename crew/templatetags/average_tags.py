@@ -1,5 +1,5 @@
 from django import template
-
+import pandas as pd
 register = template.Library()
 
 
@@ -7,6 +7,8 @@ def format_value(val):
     if isinstance(val, int):
         return val
     elif isinstance(val, float):
+        if pd.isnull(val):
+            return ''
         return '{0:.2f}'.format(val)
     else:
         return str(val)

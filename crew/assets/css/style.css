@@ -36,6 +36,9 @@ table th.klass {
 th.level, th.level-ratio {
     min-width: 70px;
 }
+th.score-level {
+    min-width: 80px;
+}
 
 
 td.rank-up {

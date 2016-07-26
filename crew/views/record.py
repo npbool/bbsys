@@ -315,12 +315,12 @@ def record_level_dist_analysis(request):
         score_formset = LevelSubjectScoreFormSet(request.POST)
 
         if form.is_valid() and rank_form.is_valid() and score_formset.is_valid():
-            print("Valid")
             ana = analysis.LevelDistAnalysis(form, rank_form, score_formset)
             df = ana.get_df()
             context = {
                 'data': df.to_dict('records'),
-                'subjects': [subject.name for subject in ana.show_subjects] + ['总分']
+                'subjects': [subject.name for subject in ana.show_subjects] + ['总分'],
+                'form': form, 'rank_form': rank_form, 'score_formset': score_formset
             }
             return render(request, 'record/level_dist.html', context)
     else:

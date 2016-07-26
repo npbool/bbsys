@@ -83,9 +83,14 @@ class LevelAnalysis(ClassBasedAnalysis):
 
 
 class LevelDistAnalysis(LevelAnalysis):
+    def __init__(self, form, rank_form, score_formset):
+        self.class_idx = form.cleaned_data['class_idx']
+        super().__init__(form, rank_form, score_formset)
+
+
     def get_student_query_set(self):
         conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
-        return Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)
+        return Student.objects.filter(conds).filter(grade_idx=self.grade, class_idx=self.class_idx, category=self.category)
 
     def get_df(self):
         df = self.record_df

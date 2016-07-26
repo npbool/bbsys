@@ -1,45 +1,36 @@
 {% load level_tags %}
-{% for subject, data, agg in data_list %}
-  <table class="table table-striped table-bordered table-condensed stat-table">
-    <caption>上线分布</caption>
-    <thead>
-    <tr>
-      <th>学校</th>
-      <th>班级</th>
-      <th>考号</th>
-      <th>学号</th>
-      <th>姓名</th>
-      {% for subject in subjects %}
-        <th>{{ subject }}</th>
-      {% endfor %}
-
-    </tr>
-    </thead>
-    <tbody>
-    {% for row in data %}
-      <tr>
-        <td>{{ row|school }}</td>
-        <td>{{ row|grade }}{{ row|class_idx }}班</td>
-        <td>
-          {{ row|score:subject }}<span class="level">{% if row|is_rank_a:subject %}(一本){% elif row|is_rank_b:subject %}
-          (二本){% endif %}</span>
-        </td>
-      </tr>
+<table class="table table-striped table-bordered table-condensed stat-table">
+  <thead>
+  <tr>
+    <th class="school">学校</th>
+    <th class="klass">班级</th>
+{#    <th>考号</th>#}
+    <th class="student-id">学号</th>
+    <th class="name">姓名</th>
+    {% for subject in subjects %}
+      <th class="score-level">{{ subject }}</th>
     {% endfor %}
-    <tr>
-      <td colspan="2">合计</td>
-      <td>{{ agg|valid_count:subject }}/{{ agg|total_count:subject }}</td>
-      <td>{{ agg|max_score:subject }}</td>
-      <td>{{ agg|mean:subject }}</td>
-      <td></td>
-      <td colspan="2">{{ agg|level_a_count:subject }} </td>
-      <td></td>
-      <td colspan="2">{{ agg|level_b_count:subject }} </td>
-      <td></td>
 
+  </tr>
+  </thead>
+  <tbody>
+  {% for row in data %}
+    <tr>
+      <td>{{ row|school }}</td>
+      <td>{{ row|grade }}{{ row|class_idx }}班</td>
+{#      <td>{{ row|value:'exam_id' }}</td>#}
+      <td>{{ row|value:'student_id' }}</td>
+      <td>{{ row|value:'name' }}</td>
+      {% for subject in subjects %}
+        <td>
+          {% if row|score:subject %}
+          {{ row|score:subject }}<span class="level">{% if row|is_level_a:subject %}(一本){% elif row|is_level_b:subject %}
+          (二本){% endif %}</span>
+          {% else %} 缺考 {% endif %}
+        </td>
+      {% endfor %}
     </tr>
-    </tbody>
-  </table>
-{% endfor %}
+  {% endfor %}
+  </tbody>
 </table>
 
