@@ -42,13 +42,12 @@ class AnalysisLevelForm(ClassAnalysisForm):
 
 
 class AnalysisLevelDistForm(AnalysisLevelForm):
-    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
+    # show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
     class_idx = forms.IntegerField(min_value=1, label="班级")
 
     def __init__(self, *args, **kwargs):
-        super().__init__(False, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.helper.layout = Layout(
-            'semester', 'exam', 'grade', 'class_idx', ' school_props', 'show_subjects'
+            'semester', 'exam', 'grade', 'class_idx', 'category', 'school_props', 'show_subjects'
         )
-
 

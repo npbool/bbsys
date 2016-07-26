@@ -315,6 +315,7 @@ def record_level_dist_analysis(request):
         score_formset = LevelSubjectScoreFormSet(request.POST)
 
         if form.is_valid() and rank_form.is_valid() and score_formset.is_valid():
+            print("Valid")
             ana = analysis.LevelDistAnalysis(form, rank_form, score_formset)
             df = ana.get_df()
             context = {
