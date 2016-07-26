@@ -7,6 +7,7 @@ import numpy as np
 
 GROUP_KEYS = ['school', 'grade', 'class_idx']
 
+
 def load_records(exam, semester, subjects, students):
     subject_df = pd.DataFrame(
         index=[subject.id for subject in subjects],
@@ -48,16 +49,14 @@ def load_records(exam, semester, subjects, students):
 def load_teachers(grade_idx):
     managers = ClassTeacher.objects.filter(grade_idx=grade_idx, ).select_related('teacher', 'subject')
     df = pd.DataFrame.from_dict([
-                                      {'school': t.get_school_display(),
-                                       'grade': t.get_grade_idx_display(),
-                                       'class_idx': t.class_idx,
-                                       'subject': "班主任" if t.subject is None else t.subject.name,
-                                       'name': t.teacher.name} for t in managers
-                                      ])
+                                    {'school': t.get_school_display(),
+                                     'grade': t.get_grade_idx_display(),
+                                     'class_idx': t.class_idx,
+                                     'subject': "班主任" if t.subject is None else t.subject.name,
+                                     'name': t.teacher.name} for t in managers
+                                    ])
     df.set_index(['school', 'grade', 'class_idx', 'subject'], inplace=True)
     return df['name'].unstack(-1)
-
-
 
 
 class AnalysisError(Exception):
@@ -73,6 +72,9 @@ class ClassBasedAnalysis:
         self.school_props = form.cleaned_data['school_props']
         self.subjects = list(Subject.category_subjects(self.category))
 
-        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
-        self.students = Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)
+        self.students = self.get_student_query_set()
         self.record_df, self.subject_list = load_records(self.exam, self.semester, self.subjects, self.students)
+
+    def get_student_query_set(self):
+        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
+        return Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)

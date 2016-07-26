@@ -2,8 +2,11 @@ import functools
 import itertools
 import pandas as pd
 import numpy as np
+from django.db.models import Q
 from .util import load_records, load_teachers, ClassBasedAnalysis, AnalysisError, GROUP_KEYS
 from .rank import rank_series
+from crew.models import Student
+import operator
 
 
 class LevelAnalysis(ClassBasedAnalysis):
@@ -79,3 +82,17 @@ class LevelAnalysis(ClassBasedAnalysis):
         return agg_list
 
 
+class LevelDistAnalysis(LevelAnalysis):
+    def get_student_query_set(self):
+        conds = functools.reduce(operator.or_, (Q(school=sp[0], prop=sp[1]) for sp in self.school_props))
+        return Student.objects.filter(conds).filter(grade_idx=self.grade, category=self.category)
+
+    def get_df(self):
+        df = self.record_df
+        for subject in ['总分'] + [s.name for s in self.show_subjects]:
+            df['rank', subject] = rank_series(df['score', subject])
+            df['is_level_a', subject] = df['rank', subject] <= self.settings['level_a_rank'] if self.settings[
+                'use_rank'] else df['score', subject] >= self.settings['level_a_score'][subject]
+            df['is_level_b', subject] = df['rank', subject] <= self.settings['level_b_rank'] if self.settings[
+                'use_rank'] else df['score', subject] >= self.settings['level_b_score'][subject]
+        return df

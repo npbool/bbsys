@@ -259,6 +259,21 @@ def record_average_cmp_analysis(request):
     return render(request, 'record/average_cmp.html', {'form': form})
 
 
+def gen_level_subject_score_form_set():
+    return LevelSubjectScoreFormSet(initial=[{
+                                                 'subject_name': subject.name,
+                                                 'subject_pk': subject.pk,
+                                                 'level_a_score': subject.level_a_score,
+                                                 'level_b_score': subject.level_b_score,
+                                             } for subject in Subject.objects.all()] +
+                                            [{
+                                                'subject_name': '总分',
+                                                'subject_pk': -1,
+                                                'level_a_score': 300,
+                                                'level_b_score': 200,
+                                            }])
+
+
 @require_http_methods(['GET', 'POST'])
 def record_level_analysis(request):
     if request.method == 'POST':
@@ -288,16 +303,31 @@ def record_level_analysis(request):
         rank_form = LevelRankForm(initial={
             'level_a_rank': 50, 'level_b_rank': 120
         })
-        score_formset = LevelSubjectScoreFormSet(initial=[{
-                                                              'subject_name': subject.name,
-                                                              'subject_pk': subject.pk,
-                                                              'level_a_score': subject.level_a_score,
-                                                              'level_b_score': subject.level_b_score,
-                                                          } for subject in Subject.objects.all()] +
-                                                         [{
-                                                             'subject_name': '总分',
-                                                             'subject_pk': -1,
-                                                             'level_a_score': 300,
-                                                             'level_b_score': 200,
-                                                         }])
+        score_formset = gen_level_subject_score_form_set()
     return render(request, 'record/level.html', {'form': form, 'rank_form': rank_form, 'score_formset': score_formset})
+
+
+@require_http_methods(['GET', 'POST'])
+def record_level_dist_analysis(request):
+    if request.method == 'POST':
+        form = AnalysisLevelDistForm(request.POST)
+        rank_form = LevelRankForm(request.POST)
+        score_formset = LevelSubjectScoreFormSet(request.POST)
+
+        if form.is_valid() and rank_form.is_valid() and score_formset.is_valid():
+            ana = analysis.LevelDistAnalysis(form, rank_form, score_formset)
+            df = ana.get_df()
+            context = {
+                'data': df.to_dict('records'),
+                'subjects': [subject.name for subject in ana.show_subjects] + ['总分']
+            }
+            return render(request, 'record/level_dist.html', context)
+    else:
+        form = AnalysisLevelDistForm()
+
+        rank_form = LevelRankForm(initial={
+            'level_a_rank': 50, 'level_b_rank': 120
+        })
+        score_formset = gen_level_subject_score_form_set()
+    return render(request, 'record/level_dist.html',
+                  {'form': form, 'rank_form': rank_form, 'score_formset': score_formset})

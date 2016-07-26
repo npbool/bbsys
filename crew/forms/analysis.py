@@ -2,7 +2,7 @@ from .general import BSForm, ClassAnalysisForm
 from django import forms
 from django.forms import formset_factory
 from crew.models import Subject
-from crispy_forms.helper import FormHelper
+from crispy_forms.helper import FormHelper, Layout
 
 
 class LevelRankForm(BSForm):
@@ -39,3 +39,16 @@ class AnalysisLevelForm(ClassAnalysisForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(False, *args, **kwargs)
+
+
+class AnalysisLevelDistForm(AnalysisLevelForm):
+    show_subjects = forms.ModelMultipleChoiceField(queryset=Subject.objects.all(), label="统计单科", required=False)
+    class_idx = forms.IntegerField(min_value=1, label="班级")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(False, *args, **kwargs)
+        self.helper.layout = Layout(
+            'semester', 'exam', 'grade', 'class_idx', ' school_props', 'show_subjects'
+        )
+
+

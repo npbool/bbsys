@@ -20,7 +20,10 @@ from django.http.response import HttpResponseRedirect
 
 
 def index(request):
-    return HttpResponseRedirect('/crew/login')
+    if request.user.is_authenticated():
+        return HttpResponseRedirect('/crew/student/query')
+    else:
+        return HttpResponseRedirect('/crew/login')
 
 
 urlpatterns = [

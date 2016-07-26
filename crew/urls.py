@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^record/average/$', record_average_analysis, name="record_average_analysis"),
     url(r'^record/average_cmp/$', record_average_cmp_analysis, name="record_average_cmp_analysis"),
     url(r'^record/level/$', record_level_analysis, name="record_level_analysis"),
+    url(r'^record/level_dist/$', record_level_dist_analysis, name="record_level_dist_analysis"),
     url(r'^login/$', user_login, name="login"),
     url(r'^logout/$', user_logout, name='logout')
 ]
