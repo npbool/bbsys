@@ -17,8 +17,8 @@ class Choices:
     SCHOOL_BB = "BB"
     SCHOOL_BX = "BX"
     SCHOOL_CHOICES = (
-        (SCHOOL_BB, "博白(0646)"),
-        (SCHOOL_BX, "博学(0657)")
+        (SCHOOL_BB, "博白"),
+        (SCHOOL_BX, "博学")
     )
 
     GRADE_S1 = 1
