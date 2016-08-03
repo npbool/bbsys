@@ -1,2 +1,4 @@
 from .analysis import *
-from .general import *
+from .student import *
+from .record import *
+from .auth import *

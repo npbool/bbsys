@@ -40,6 +40,9 @@ th.score-level {
     min-width: 80px;
 }
 
+th.level-score {
+    min-width: 100px;
+}
 
 td.rank-up {
     color: red;
